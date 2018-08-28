@@ -26,11 +26,11 @@ public class Comida {
     public static final List<Comida> PLATILLOS = new ArrayList<>();
 
     static {
-        COMIDAS_POPULARES.add(new Comida(5, "Camarones Tismados", R.drawable.notification_drawable));
-        COMIDAS_POPULARES.add(new Comida(3.2f, "Rosca Herbárea", R.drawable.notification_drawable));
-        COMIDAS_POPULARES.add(new Comida(12f, "Sushi Extremo", R.drawable.notification_drawable));
-        COMIDAS_POPULARES.add(new Comida(9, "Sandwich Deli", R.drawable.notification_drawable));
-        COMIDAS_POPULARES.add(new Comida(34f, "Lomo De Cerdo Austral", R.drawable.notification_drawable));
+        COMIDAS_POPULARES.add(new Comida(5, "Camarones Tismados", R.drawable.camarones));
+        COMIDAS_POPULARES.add(new Comida(3.2f, "Rosca Herbárea", R.drawable.rosca));
+        COMIDAS_POPULARES.add(new Comida(12f, "Sushi Extremo", R.drawable.sushi));
+        COMIDAS_POPULARES.add(new Comida(9, "Sandwich Deli", R.drawable.sandwich));
+        COMIDAS_POPULARES.add(new Comida(34f, "Lomo De Cerdo Austral", R.drawable.lomo_cerdo));
 
 //        PLATILLOS.add(new Comida(5, "Camarones Tismados", R.drawable.camarones));
 //        PLATILLOS.add(new Comida(3.2f, "Rosca Herbárea", R.drawable.rosca));

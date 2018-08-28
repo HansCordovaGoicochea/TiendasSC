@@ -3,19 +3,89 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="#fff"
     android:orientation="vertical"
     android:padding="@dimen/margin10"
     app:behavior_hideable="true"
     app:behavior_peekHeight="56dp"
-    app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
+    app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
+    android:weightSum="1">
 
 
     <!--&gt; app: layout_behavior: este atributo hace que el diseño actúe como la hoja inferior. El valor debe ser android.support.design.widget.BottomSheetBehavior-->
     <!--&gt; app: behavior_peekHeight: esta es la altura de la hoja inferior cuando se minimiza.-->
     <!--&gt; app: behavior_hideable: hace que la hoja inferior se esconda cuando se desliza hacia abajo.-->
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_weight=".01">
+
+        <TextView
+            android:id="@+id/txtProducto"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin10"
+            android:layout_weight="3"
+            android:text="N Productos en el carrito"
+            android:textColor="#444"
+            android:textSize="14dp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_weight=".9">
+
+        <!-- A RecyclerView with some commonly used attributes -->
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/reciclerview_productos"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_height="1dip"
+        android:background="#FF909090"
+        android:layout_width="match_parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_vertical"
+        android:weightSum="3"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin10"
+            android:layout_weight="2"
+            android:text="TOTAL"
+            android:textColor="#444"
+            android:textSize="18dp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:gravity="right"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textStyle="bold"
+            android:textSize="15dp"
+            android:text="S/435.00"
+            android:id="@+id/txtTotal"/>
+    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -27,15 +97,21 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/margin10"
-            android:layout_weight="3"
-            android:text="N Productos en el carrito"
+            android:layout_weight="2"
+            android:text="Subtotal"
             android:textColor="#444"
+            android:textSize="14dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:gravity="right"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:textSize="14dp"
-            android:textStyle="bold"
-            android:id="@+id/txtProducto"/>
+            android:text="S/435.00"
+            android:id="@+id/txtSubtotal"/>
 
     </LinearLayout>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,35 +119,33 @@
         android:layout_gravity="center_vertical"
         android:weightSum="3">
 
-        <!-- A RecyclerView with some commonly used attributes -->
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/reciclerview_productos"
-            android:scrollbars="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin10"
+            android:layout_weight="2"
+            android:text="I.G.V."
+            android:textColor="#444"
+            android:textSize="14dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:gravity="right"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="14dp"
+            android:text="S/435.00"
+            android:id="@+id/txtIgv"/>
 
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_gravity="center_vertical"
-        android:weightSum="3">
-
-
-
-    </LinearLayout>
-
 
     <Button
+        android:id="@+id/btnPasar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:background="#000"
         android:foreground="?attr/selectableItemBackground"
         android:text="REALIZAR PEDIDO"
-        android:textColor="#fff"
-        android:id="@+id/btnPasar"/>
-
+        android:textColor="#fff" />
 </LinearLayout>

@@ -1,6 +1,7 @@
 package com.scientechperu.tiendassc;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -24,8 +25,10 @@ import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.scientechperu.tiendassc.Clases.Carro;
 import com.scientechperu.tiendassc.Clases.CategoriaTienda;
 import com.scientechperu.tiendassc.Entendiendo.Utils;
+import com.scientechperu.tiendassc.Fragmentos.FragmentCarrito;
 import com.scientechperu.tiendassc.Fragmentos.FragmentoInicio;
 import com.scientechperu.tiendassc.Fragmentos.PlaceholderFragment;
 
@@ -186,9 +189,8 @@ public class ActividadPrincipal extends AppCompatActivity{
         // Obtener drawable del item
 
         LayerDrawable icon = (LayerDrawable) item.getIcon();
-//        LayerDrawable icon = new LayerDrawable(new Drawable[] { item.getIcon() });
         // Actualizar el contador
-        Utils.setBadgeCount(this, icon, 3);
+        Utils.setBadgeCount(this, icon, (int) Carro.count(Carro.class));
 
         return true;
     }
@@ -197,12 +199,24 @@ public class ActividadPrincipal extends AppCompatActivity{
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        fragmentManager = getSupportFragmentManager();
+
         switch (item.getItemId()) {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
                 return true;
             case R.id.action_shop:
-                Toast.makeText(getApplicationContext(), "Carrrioto", Toast.LENGTH_SHORT).show();
+                Bundle args = new Bundle();
+                args.putString(FragmentCarrito.ARG_SECTION_TITLE, "Carrito");
+                fragment = FragmentCarrito.newInstance("Carrito");
+                fragment.setArguments(args);
+
+                fragmentManager
+                        .beginTransaction()
+                        .replace(R.id.contenedor_principal, fragment)
+                        .commit();
+                setTitle("Carrito"); // Setear título actual
+//                Toast.makeText(getApplicationContext(), "Carrrioto", Toast.LENGTH_SHORT).show();
                 return true;
         }
         return super.onOptionsItemSelected(item);

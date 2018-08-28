@@ -42,7 +42,8 @@
             android:name="DOMAIN_PACKAGE_NAME"
             android:value="com.scientechperu.tiendassc" />
 
-        <!--<activity android:name=".ActivividadCarrito"></activity>-->
+        <!-- <activity android:name=".ActivividadCarrito"></activity> -->
+        <activity android:name=".ActividadCarrito"></activity>
     </application>
 
 </manifest>
