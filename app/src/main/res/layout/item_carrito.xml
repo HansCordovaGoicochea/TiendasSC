@@ -1,78 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_view_friend"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginLeft="2dp"
+    android:layout_marginRight="2dp"
+    android:layout_marginTop="2dp"
     card_view:cardCornerRadius="4dp"
     card_view:cardUseCompatPadding="true">
 
-    <!-- Clickable and selectableItemBackground are optional -->
     <RelativeLayout
         android:id="@+id/two_line_item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?selectableItemBackground"
-        android:clickable="true"
-        android:minHeight="72dp"
-        android:paddingEnd="?listPreferredItemPaddingRight"
-        android:paddingLeft="?listPreferredItemPaddingLeft"
-        android:paddingRight="?listPreferredItemPaddingRight"
-        android:paddingStart="?listPreferredItemPaddingLeft">
-
-        <ImageView
-            android:id="@+id/primary_action"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="16dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/noimage" />
+        android:background="@android:color/white"
+        android:minHeight="72dp">
 
         <LinearLayout
-            android:id="@+id/lines_container"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignWithParentIfMissing="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:layout_toEndOf="@+id/primary_action"
-            android:layout_toRightOf="@+id/primary_action"
-            android:orientation="vertical"
-            android:paddingBottom="16dp"
-            android:paddingTop="16dp">
+            android:background="@android:color/white"
+            android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/first_text_view"
-                style="@style/TextAppearance.AppCompat.Body2"
+            <FrameLayout
+                android:id="@+id/frame_imagen_carrito"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                tools:text="First Line" />
+                android:layout_gravity="center_horizontal">
 
-            <TextView
-                android:id="@+id/second_text_view"
-                style="@style/TextAppearance.AppCompat.Body1"
+                <ImageView
+                    android:id="@+id/imagen_producto_carrito"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_margin="7dp"
+                    android:contentDescription="@string/thumbnail"
+                    android:src="@drawable/noimage"/>
+
+                <ProgressBar
+                    android:id="@+id/homeprogress_carrito"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center" />
+            </FrameLayout>
+
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/nombre_producto_carrito"
+                    android:layout_width="wrap_content"
+                    android:singleLine="true"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="7dp"
+                    android:text="Nombre del producto"
+                    android:textColor="#616161"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/cantidad_pedida_carrito"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:text="Cantidad"
+                    android:textSize="12sp"
+                    android:textStyle="italic" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                tools:text="Second Line" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/precio_producto_carrito"
+                    style="@style/TextAppearance.AppCompat.Body1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:singleLine="true"
+                    tools:text="S/8.0" />
+
+                <ImageView
+                    android:id="@+id/img_row_delete"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
+                    android:layout_margin="7dp"
+                    android:contentDescription="Delete"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:src="@drawable/delete" />
+            </LinearLayout>
+
         </LinearLayout>
-
-        <!-- Can be replaced by a widget -->
-        <TextView
-            android:id="@+id/asv"
-            style="@style/TextAppearance.AppCompat.Body1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginLeft="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:singleLine="true"
-            tools:text="Second Line" />
     </RelativeLayout>
 
 </android.support.v7.widget.CardView>

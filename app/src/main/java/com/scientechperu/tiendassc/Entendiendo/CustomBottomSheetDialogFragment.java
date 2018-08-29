@@ -1,16 +1,21 @@
 package com.scientechperu.tiendassc.Entendiendo;
 
 import android.graphics.Typeface;
+import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.scientechperu.tiendassc.Clases.Carro;
 import com.scientechperu.tiendassc.Clases.Productos;
@@ -49,30 +54,19 @@ public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
             // Set typeface
             cant.setTypeface(Typeface.create(getString(R.string.roboto_light), Typeface.NORMAL));
-//            cant.setTypeface(getString(R.string.roboto_light), Typeface.NORMAL);
-//            cant.setTypeface(getString(R.string.roboto_light));
-//            cant.setTypeface(R.string.roboto_light, Typeface.NORMAL);
-//            cant.setTypeface(R.string.roboto_light);
 
             producto.setText(item.getName());
             precio.setText("S/ "+item.getPrecio_con_igv());
 
-
         }
 
-//        Button btn1 = (Button)v.findViewById(R.id.btn1);
-//        btn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                startActivity(new Intent(getActivity(),YourActivity.class));
-//            }
-//        });
         return v;
     }
 
     @Override
     public void onViewCreated(@NonNull final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
 
         pasar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,14 +77,20 @@ public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
 
                     Carro carro = carros.get(0);
+
                     Integer cantidad_old = carro.getCantidad();
                     Integer cantidad_new = cantidad_old + cant.getValue();
+
                     carro.setCantidad(cantidad_new);
+                    Double importe = (cantidad_new * Double.parseDouble(item.getPrecio_con_igv()));
+                    carro.setImporte(importe);
                     carro.save();
 
                     Toast.makeText(getContext(), "¡Tienes "+cantidad_new+" "+item.getName()+"!", Toast.LENGTH_SHORT).show();
 
                 }else{
+                    Double importe = (cant.getValue() * Double.parseDouble(item.getPrecio_con_igv()));
+
                     Carro carro = new Carro();
                     carro.setId_cart(UUID.randomUUID().toString());
                     carro.setId_producto(item.getId_product().toString());
@@ -98,10 +98,15 @@ public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
                     carro.setNombre_producto(item.getName());
                     carro.setPrecio_producto(Double.valueOf(item.getPrecio_con_igv()));
                     carro.setId_image(item.getId_image());
+                    carro.setImporte(importe);
                     carro.save();
 
                     Toast.makeText(getContext(), "¡Tienes "+cant.getValue()+" "+item.getName(), Toast.LENGTH_SHORT).show();
                 }
+
+
+
+//                textCartItemCount.setText((int)Carro.count(Carro.class));
 
                 dismiss();
             }

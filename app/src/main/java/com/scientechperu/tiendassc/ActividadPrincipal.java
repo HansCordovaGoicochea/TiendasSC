@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -23,6 +24,7 @@ import android.view.View;
 import android.widget.BaseAdapter;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.scientechperu.tiendassc.Clases.Carro;
@@ -58,6 +60,9 @@ public class ActividadPrincipal extends AppCompatActivity{
     CategoriaTienda pojoCaTienda;
 
     public String CURRENT_FRAGMENT_TAG;
+
+    TextView textCartItemCount;
+    int mCartItemCount = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,19 +187,55 @@ public class ActividadPrincipal extends AppCompatActivity{
 
     }
 
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.menu_main, menu);
+//        MenuItem item = menu.findItem(R.id.action_shop);
+//        // Obtener drawable del item
+//        LayerDrawable icon = (LayerDrawable) item.getIcon();
+//        // Actualizar el contador
+//        Utils.setBadgeCount(this, icon, (int) Carro.count(Carro.class));
+//
+//        return true;
+//    }
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        MenuItem item = menu.findItem(R.id.action_shop);
-        // Obtener drawable del item
 
-        LayerDrawable icon = (LayerDrawable) item.getIcon();
-        // Actualizar el contador
-        Utils.setBadgeCount(this, icon, (int) Carro.count(Carro.class));
+        final MenuItem menuItem = menu.findItem(R.id.action_shop);
+
+        View actionView = MenuItemCompat.getActionView(menuItem);
+        textCartItemCount = (TextView) actionView.findViewById(R.id.cart_badge);
+        mCartItemCount = (int) Carro.count(Carro.class);
+        setupBadge(mCartItemCount);
+
+        actionView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(menuItem);
+            }
+        });
 
         return true;
     }
 
+    public void setupBadge(int count) {
+
+        if (textCartItemCount != null) {
+            if (count == 0) {
+                if (textCartItemCount.getVisibility() != View.GONE) {
+                    textCartItemCount.setVisibility(View.GONE);
+                }
+            } else {
+                textCartItemCount.setText(String.valueOf(Math.min(count, 99)));
+                if (textCartItemCount.getVisibility() != View.VISIBLE) {
+                    textCartItemCount.setVisibility(View.VISIBLE);
+                }
+            }
+        }
+    }
 
 
     @Override

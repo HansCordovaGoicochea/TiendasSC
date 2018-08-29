@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.scientechperu.tiendassc.Clases.Productos;
 import com.scientechperu.tiendassc.Entendiendo.CustomBottomSheetDialogFragment;
 import com.scientechperu.tiendassc.R;
@@ -48,7 +50,8 @@ public class RecyclerViewHolderProductos extends RecyclerView.ViewHolder impleme
         this.items = items;
 
         customBottomSheetDialogFragment = new CustomBottomSheetDialogFragment();
-
+//
+//        Toast.makeText(itemView.getContext(), "dsfdsfdsfdsf", Toast.LENGTH_SHORT).show();
     }
 
     @Override

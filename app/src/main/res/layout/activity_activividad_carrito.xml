@@ -6,11 +6,11 @@
     android:layout_height="match_parent"
     android:background="#fff"
     android:orientation="vertical"
-    android:padding="@dimen/margin10"
+    android:padding="7dp"
+    android:weightSum="1"
     app:behavior_hideable="true"
     app:behavior_peekHeight="56dp"
-    app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
-    android:weightSum="1">
+    app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
 
 
     <!--&gt; app: layout_behavior: este atributo hace que el diseño actúe como la hoja inferior. El valor debe ser android.support.design.widget.BottomSheetBehavior-->
@@ -21,11 +21,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:orientation="horizontal"
-        android:layout_weight=".01">
+        android:layout_weight=".01"
+        android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/txtProducto"
+            android:id="@+id/txtCantidadProd"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/margin10"
@@ -41,8 +41,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:orientation="horizontal"
-        android:layout_weight=".9">
+        android:layout_weight=".9"
+        android:orientation="horizontal">
 
         <!-- A RecyclerView with some commonly used attributes -->
         <android.support.v7.widget.RecyclerView
@@ -54,17 +54,17 @@
     </LinearLayout>
 
     <View
+        android:layout_width="match_parent"
         android:layout_height="1dip"
-        android:background="#FF909090"
-        android:layout_width="match_parent" />
+        android:background="#FF909090" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_gravity="center_vertical"
-        android:weightSum="3"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:weightSum="3">
 
         <TextView
             android:layout_width="0dp"
@@ -74,23 +74,24 @@
             android:text="TOTAL"
             android:textColor="#444"
             android:textSize="18dp"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
 
         <TextView
+            android:id="@+id/txtTotal"
             android:layout_width="0dp"
-            android:gravity="right"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textStyle="bold"
-            android:textSize="15dp"
+            android:gravity="right"
             android:text="S/435.00"
-            android:id="@+id/txtTotal"/>
+            android:textSize="15dp"
+            android:textStyle="bold" />
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_gravity="center_vertical"
+        android:orientation="horizontal"
         android:weightSum="3">
 
         <TextView
@@ -100,23 +101,24 @@
             android:layout_weight="2"
             android:text="Subtotal"
             android:textColor="#444"
-            android:textSize="14dp"/>
+            android:textSize="14dp" />
 
         <TextView
+            android:id="@+id/txtSubtotal"
             android:layout_width="0dp"
-            android:gravity="right"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="14dp"
+            android:gravity="right"
             android:text="S/435.00"
-            android:id="@+id/txtSubtotal"/>
+            android:textSize="14dp" />
 
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_gravity="center_vertical"
+        android:orientation="horizontal"
         android:weightSum="3">
 
         <TextView
@@ -126,16 +128,16 @@
             android:layout_weight="2"
             android:text="I.G.V."
             android:textColor="#444"
-            android:textSize="14dp"/>
+            android:textSize="14dp" />
 
         <TextView
+            android:id="@+id/txtIgv"
             android:layout_width="0dp"
-            android:gravity="right"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="14dp"
+            android:gravity="right"
             android:text="S/435.00"
-            android:id="@+id/txtIgv"/>
+            android:textSize="14dp" />
 
     </LinearLayout>
 
@@ -143,7 +145,8 @@
         android:id="@+id/btnPasar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="10dp"
         android:background="#000"
         android:foreground="?attr/selectableItemBackground"
         android:text="REALIZAR PEDIDO"

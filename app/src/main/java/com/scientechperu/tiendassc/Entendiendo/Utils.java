@@ -6,6 +6,7 @@ import android.graphics.drawable.LayerDrawable;
 
 import com.scientechperu.tiendassc.R;
 
+
 /**
  * Clase de utilidades
  */
@@ -27,4 +28,7 @@ public class Utils {
         icon.mutate();
         icon.setDrawableByLayerId(R.id.ic_badge, badge);
     }
+
+
+
 }

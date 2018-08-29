@@ -71,7 +71,6 @@ public class FragmentProductos extends Fragment {
     }
 
 
-
     public FragmentProductos() {
     }
 
@@ -86,11 +85,6 @@ public class FragmentProductos extends Fragment {
         URL = getArguments().getString(ARG_SECTION_URL);
 
 //        Toast.makeText(getContext(), URL, Toast.LENGTH_SHORT).show();
-
-//        BottomSheetDialogFragment bottomSheetFragment = new BottomSheetFragment();
-//        Bundle bundle = new Bundle();
-//        bundle.putString("test", "oh ya");
-//        bottomSheetFragment.setArguments(bundle);
 
         // Obtención del grid view
         rView = (RecyclerView)view.findViewById(R.id.recycler_view);
@@ -118,12 +112,6 @@ public class FragmentProductos extends Fragment {
                 public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
 
                     if (!isFirstCall) {
-                        Log.d(TAG, "loadNextPage: " + URL+"&sort=[id_ASC]&limit="+ (((Integer) ProductsList.size()))+",10");
-                        Log.d(TAG, "loadNextPage: " + gridLayoutManager.findLastCompletelyVisibleItemPosition());
-                        Log.d(TAG, "loadNextPage: " + (((Integer) ProductsList.size())-1));
-                        Log.d(TAG, "loadNextPage: " + (((Integer) ProductsList.size())));
-                        Log.d(TAG, "loadNextPage: " + page);
-                        Log.d(TAG, "loadNextPage: " + totalItemsCount);
 
                         jsonParse(URL+"&sort=[id_ASC]&limit="+ProductsList.size()+",10");
 
