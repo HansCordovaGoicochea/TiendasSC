@@ -1,9 +1,11 @@
 package com.scientechperu.tiendassc.Adaptadores;
 
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +20,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.scientechperu.tiendassc.Clases.Carro;
 import com.scientechperu.tiendassc.Clases.Productos;
 import com.scientechperu.tiendassc.Clases.UrlRaiz;
 import com.scientechperu.tiendassc.R;
@@ -29,6 +32,7 @@ import java.util.List;
  */
 public class RecyclerAdapterProductos extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    private Context context;
     private List<Productos> items;
 
     private static final int ITEM = 0;
@@ -36,7 +40,8 @@ public class RecyclerAdapterProductos extends RecyclerView.Adapter<RecyclerView.
 
     private boolean isFooterEnabled = true;
 
-    public RecyclerAdapterProductos(List<Productos> items) {
+    public RecyclerAdapterProductos(Context mContext,List<Productos> items) {
+        this.context = mContext;
         this.items = items;
 
     }
@@ -57,6 +62,7 @@ public class RecyclerAdapterProductos extends RecyclerView.Adapter<RecyclerView.
                 break;
         }
 
+
 //
 //        final RecyclerView.ViewHolder finalViewHolder = viewHolder;
 //        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -71,6 +77,10 @@ public class RecyclerAdapterProductos extends RecyclerView.Adapter<RecyclerView.
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+
+//        Toast toast= Toast.makeText(context, ""+Carro.count(Carro.class), Toast.LENGTH_SHORT);
+//        toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 30);
+//        toast.show();
 
         switch (getItemViewType(position)) {
             case ITEM:

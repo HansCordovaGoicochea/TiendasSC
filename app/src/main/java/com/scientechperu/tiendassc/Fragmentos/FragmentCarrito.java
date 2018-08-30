@@ -4,17 +4,23 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -23,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -46,7 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.scientechperu.tiendassc.Splash.isOnline;
-
+//import static com.scientechperu.tiendassc.Fragmentos.FragmentProductos.;
 
 public class FragmentCarrito extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
@@ -58,7 +65,10 @@ public class FragmentCarrito extends Fragment {
 
     public RecyclerView recyclerView;
     RecyclerAdapterCarrito rcAdapter;
-    private List<Carro> CarroList = Carro.listAll(Carro.class);
+
+    private List<Carro> CarroList = new ArrayList<>();
+//    private List<Carro> CarroList = Carro.listAll(Carro.class);
+//    private List<Carro> CarroList = Carro.find(Carro.class, "idshop = ?", vals);
 
 
     public TextView cantidad_productos;
@@ -67,14 +77,60 @@ public class FragmentCarrito extends Fragment {
     public TextView igv;
 
 
-    private PopupWindow window;
-
     String id_address = "0";
     String id_customer = "4"; // el cliente 4 es prueba
+
+    AlertDialog alertDialog;
+
+    TextView textCartItemCount;
+    int mCartItemCount = 0;
+
+    SharedPreferences prefs;
 
     public FragmentCarrito() {
         // Required empty public constructor
     }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+
+    }
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu,inflater);
+
+        final MenuItem menuItem = menu.findItem(R.id.action_shop);
+        View actionView = menuItem.getActionView();
+
+        textCartItemCount = (TextView) actionView.findViewById(R.id.cart_badge); // el texto de numero de productos
+
+        // To load the data at a later time
+        prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
+        Integer idtienda_current = prefs.getInt("id_shop", 0);
+
+        String[] vals = {
+                String.valueOf(idtienda_current)
+        };
+        mCartItemCount = (int) Carro.count(Carro.class, "idshop = ?", vals);
+        if (mCartItemCount < 0){
+            mCartItemCount = 0;
+        }
+
+        setupBadge(mCartItemCount);
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().setTitle(ARG_SECTION_TITLE);
+    }
+
+
 
     /**
      * Crea una instancia prefabricada de {@link FragmentCarrito}
@@ -98,6 +154,22 @@ public class FragmentCarrito extends Fragment {
 
         View view = inflater.inflate(R.layout.activity_activividad_carrito, container, false);
 
+        // To load the data at a later time
+        prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
+        Integer idtienda_current = prefs.getInt("id_shop", 0);
+
+        String[] vals = {
+                String.valueOf(idtienda_current)
+        };
+        List<Carro> CarroList = Carro.find(Carro.class, "idshop = ?", vals);
+
+
+//
+
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("cargado", true);
+        editor.apply();
+
         // Ubicar argumento en el text view de section_fragment.xml
         String title = getArguments().getString(ARG_SECTION_TITLE);
         URL = getArguments().getString(ARG_SECTION_URL);
@@ -120,40 +192,38 @@ public class FragmentCarrito extends Fragment {
         subtotal = view.findViewById(R.id.txtSubtotal);
         igv = view.findViewById(R.id.txtIgv);
 
-        cantidad_productos.setText((int) Carro.count(Carro.class)+" Productos para pedir");
+        cantidad_productos.setText((int) Carro.count(Carro.class, "idshop = ?", vals)+" Productos para pedir");
+
+        Button realizar_pedido = (Button) view.findViewById(R.id.btnPasar);
+
 
         double totalSum = 0.0;
         double subtotalSum = 0.0;
         double igvSum = 0.0;
-        List<Carro> carros = Carro.listAll(Carro.class);
-        for (int i = 0; i < carros.size(); i++) {
-            totalSum += carros.get(i).getImporte();
+
+        for (int i = 0; i < CarroList.size(); i++) {
+            totalSum += CarroList.get(i).getImporte();
         }
         if (totalSum > 0){
             subtotalSum = totalSum / 1.18;
             igvSum =  totalSum - subtotalSum;
+            realizar_pedido.setEnabled(true);
+        }else{
+            realizar_pedido.setEnabled(false);
         }
         total.setText("S/"+ roundTwoDecimals(totalSum));
         subtotal.setText("S/"+roundTwoDecimals(subtotalSum));
         igv.setText("S/"+roundTwoDecimals(igvSum));
 
 
-        Button realizar_pedido = (Button) view.findViewById(R.id.btnPasar);
         realizar_pedido.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-//                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
-//                // Setting Alert Dialog Title
-//                alertDialogBuilder.setTitle("Confirmar pedido..!!!");
-//                // Icon Of Alert Dialog
-//                alertDialogBuilder.setIcon(R.drawable.question);
-//                // Setting Alert Dialog Message
-//                alertDialogBuilder.setMessage("Are you sure,You want to exit");
+
                 if(isOnline(getContext())){
                     ShowPopupWindow();
-
                 }else{
                     Toast.makeText(getActivity(),"No hay conexión a internet",Toast.LENGTH_SHORT).show();
                 }
@@ -163,7 +233,6 @@ public class FragmentCarrito extends Fragment {
         });
 
 
-
         return view;
     }
 
@@ -171,7 +240,14 @@ public class FragmentCarrito extends Fragment {
     public void xmlSendCart(){
 
 //                'http://mystore.com/api/customers?schema=blank'
-        String url = UrlRaiz.domain+"/pollos-parrillas-elhawaiano/api/carts/"+UrlRaiz.ws_key+"&schema=blank";
+
+        // To load the data at a later time
+        prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
+        Integer idtienda_current = prefs.getInt("id_shop", 0);
+
+        Tienda tienda = Tienda.findById(Tienda.class, idtienda_current);
+
+        String url = UrlRaiz.domain+"/"+tienda.getVirtual_uri()+"api/carts/"+UrlRaiz.ws_key+"&schema=blank";
 
         final ProgressDialog pDialog = new ProgressDialog(getContext());
         pDialog.setMessage("Enviando...");
@@ -283,27 +359,26 @@ public class FragmentCarrito extends Fragment {
     private void ShowPopupWindow(){
         try {
 
-            xmlSendCart();
+//            xmlSendCart(); // para enviar a la web los datos del carrito
 
             ImageView btncall, btnsound, btncamera, btnvideo,btngallary,btnwrite;
 
-//            LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//            View layout = inflater.inflate(R.layout.popup_after_cart, null);
-            View layout = LayoutInflater.from(getActivity()).inflate(R.layout.popup_after_cart, null);
-            window = new PopupWindow(layout, WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT, false);
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
+            alertDialogBuilder.setCancelable(false);
+            View dialog_call = getLayoutInflater().inflate(R.layout.popup_after_cart, null);
+            alertDialogBuilder.setView(dialog_call);
+            alertDialog = alertDialogBuilder.create();
+            alertDialog.setCanceledOnTouchOutside(false);
+            alertDialog.show();
+            // window.showAtLocation(layout, 17, 100, 100);
 
-            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            window.setOutsideTouchable(false);
-            window.showAtLocation(layout, Gravity.CENTER,0, 0);
-            //  window.showAtLocation(layout, 17, 100, 100);
-
-            btncall = (ImageView) layout.findViewById(R.id.btncall);
-            btnsound = (ImageView) layout.findViewById(R.id.btnsound);
+            btncall = (ImageView) dialog_call.findViewById(R.id.btncall);
+            btnsound = (ImageView) dialog_call.findViewById(R.id.btnsound);
             btncall.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Log.e(TAG, " button call press ");
-                    window.dismiss();
+                    alertDialog.dismiss();
                 }
 
             });
@@ -312,7 +387,7 @@ public class FragmentCarrito extends Fragment {
                 @Override
                 public void onClick(View v) {
                     Log.e(TAG, " sound  touch");
-                    window.dismiss();
+                    alertDialog.dismiss();
 
                 }
 
@@ -320,6 +395,22 @@ public class FragmentCarrito extends Fragment {
 
         }catch (Exception e){
 
+        }
+    }
+    public void setupBadge(int count) {
+
+        if (textCartItemCount != null) {
+//            if (count == 0) {
+//                textCartItemCount.setText(String.valueOf(Math.min(0, 99)));
+//                if (textCartItemCount.getVisibility() != View.GONE) {
+//                    textCartItemCount.setVisibility(View.GONE);
+//                }
+//            } else {
+            textCartItemCount.setText(String.valueOf(Math.min(count, 99)));
+            if (textCartItemCount.getVisibility() != View.VISIBLE) {
+                textCartItemCount.setVisibility(View.VISIBLE);
+            }
+//            }
         }
     }
 

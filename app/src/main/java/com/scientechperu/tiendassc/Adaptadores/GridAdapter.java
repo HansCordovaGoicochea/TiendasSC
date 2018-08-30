@@ -2,6 +2,7 @@ package com.scientechperu.tiendassc.Adaptadores;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -146,6 +147,12 @@ public class GridAdapter extends BaseAdapter {
 
                 activity.getSupportFragmentManager().beginTransaction().replace(R.id.contenedor_principal, fragmentProductos).addToBackStack(null).commit();
                 activity.setTitle(FragmentProductos.ARG_SECTION_TITLE);
+
+                // To load the data at a later time
+                SharedPreferences prefs = activity.getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putInt("id_shop", item.getId_shop());
+                editor.apply();
             }
         });
 

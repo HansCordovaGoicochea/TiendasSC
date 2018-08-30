@@ -34,8 +34,8 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
     </LinearLayout>
     <LinearLayout
@@ -47,7 +47,9 @@
         android:paddingTop="10dp"
         android:paddingRight="10dp"
         android:paddingLeft="10dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="?selectableItemBackground"
+        android:clickable="true">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -55,9 +57,7 @@
             android:maxHeight="70dp"
             android:maxWidth="70dp"
             android:src="@drawable/ic_settings_phone_white_48dp"
-            android:id="@+id/btncall"
-            android:background="?selectableItemBackground"
-            android:clickable="true"/>
+            android:id="@+id/btncall"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -73,7 +73,9 @@
         android:gravity="center"
         android:layout_margin="5dp"
         android:paddingTop="10dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="?selectableItemBackground"
+        android:clickable="true">
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -82,9 +84,7 @@
             android:maxHeight="70dp"
             android:maxWidth="70dp"
             android:src="@drawable/ic_settings_voice_white_48dp"
-            android:id="@+id/btnsound"
-            android:background="?selectableItemBackground"
-            android:clickable="true"/>
+            android:id="@+id/btnsound"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

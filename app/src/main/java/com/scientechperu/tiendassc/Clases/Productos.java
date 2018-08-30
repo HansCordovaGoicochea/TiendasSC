@@ -14,12 +14,13 @@ public class Productos implements Serializable{
     private String activo;
     private String available;
     private String precio_con_igv;
+    private String id_shop_default;
 
     public Productos() {
     }
 
     public Productos(Integer id_product, String name, Integer id_image, String description_short, String description, Double price,
-                     String id_supplier, String reference, String activo, String available, Double precio_con_igv) {
+                     String id_supplier, String reference, String activo, String available, Double precio_con_igv, String id_shop_default) {
         this.id_product        = id_product;
         this.name              = name;
         this.id_image          = id_image;
@@ -31,6 +32,7 @@ public class Productos implements Serializable{
         this.activo            = activo;
         this.available         = available+"";
         this.precio_con_igv    = ""+precio_con_igv;
+        this.id_shop_default    = ""+id_shop_default;
     }
 
     public Integer getId_product() {
@@ -119,6 +121,14 @@ public class Productos implements Serializable{
 
     public void setPrecio_con_igv(String precio_con_igv) {
         this.precio_con_igv = precio_con_igv;
+    }
+
+    public String getId_shop_default() {
+        return id_shop_default;
+    }
+
+    public void setId_shop_default(String id_shop_default) {
+        this.id_shop_default = id_shop_default;
     }
 
 }

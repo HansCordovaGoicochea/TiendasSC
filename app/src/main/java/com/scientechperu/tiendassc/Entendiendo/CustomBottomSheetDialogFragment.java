@@ -1,11 +1,14 @@
 package com.scientechperu.tiendassc.Entendiendo;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,6 +38,7 @@ public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
     public TextView precio;
     public Button pasar;
 
+    public TextView badge;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.bottom_sheet, container, false);
@@ -52,12 +56,17 @@ public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
             cant = v.findViewById(R.id.cantidad);
             pasar = v.findViewById(R.id.btnPasar);
 
+            badge = getActivity().findViewById(R.id.cart_badge);
+
+
             // Set typeface
             cant.setTypeface(Typeface.create(getString(R.string.roboto_light), Typeface.NORMAL));
 
             producto.setText(item.getName());
             precio.setText("S/ "+item.getPrecio_con_igv());
 
+
+//            Toast.makeText(getContext(), "num "+badge.getText(), Toast.LENGTH_SHORT).show();
         }
 
         return v;
@@ -86,7 +95,10 @@ public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
                     carro.setImporte(importe);
                     carro.save();
 
-                    Toast.makeText(getContext(), "¡Tienes "+cantidad_new+" "+item.getName()+"!", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getContext(), "¡Tienes "+cantidad_new+" "+item.getName()+"!", Toast.LENGTH_SHORT).show();
+                    Toast toast= Toast.makeText(getContext(), "¡Tienes "+cantidad_new+" "+item.getName()+"!", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 60);
+                    toast.show();
 
                 }else{
                     Double importe = (cant.getValue() * Double.parseDouble(item.getPrecio_con_igv()));
@@ -99,14 +111,32 @@ public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
                     carro.setPrecio_producto(Double.valueOf(item.getPrecio_con_igv()));
                     carro.setId_image(item.getId_image());
                     carro.setImporte(importe);
+                    carro.setId_shop(Integer.valueOf(item.getId_shop_default()));
                     carro.save();
 
-                    Toast.makeText(getContext(), "¡Tienes "+cant.getValue()+" "+item.getName(), Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getContext(), "¡Tienes "+cant.getValue()+" "+item.getName(), Toast.LENGTH_SHORT).show();
+                    Toast toast= Toast.makeText(getContext(), "¡Tienes "+cant.getValue()+" "+item.getName(), Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 30);
+                    toast.show();
                 }
 
+//                    Toast toast= Toast.makeText(getContext(), "¡Tienes "+cant.getValue()+" "+item.getName(), Toast.LENGTH_SHORT);
+
+//                Toast.makeText(getContext(), "num "+badge.getText(), Toast.LENGTH_SHORT).show();
+                //actualizar el icono del carrito
+                // To load the data at a later time
+                SharedPreferences prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
+                Integer idtienda_current = prefs.getInt("id_shop", 0);
 
 
-//                textCartItemCount.setText((int)Carro.count(Carro.class));
+                String[] vals = {
+                        String.valueOf(idtienda_current)
+                };
+                int mCartItemCount = (int) Carro.count(Carro.class, "idshop = ?", vals);
+                if (mCartItemCount < 0){
+                    mCartItemCount = 0;
+                }
+                badge.setText(String.valueOf(mCartItemCount));
 
                 dismiss();
             }

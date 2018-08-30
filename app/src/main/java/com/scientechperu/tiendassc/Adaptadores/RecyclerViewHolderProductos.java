@@ -35,6 +35,8 @@ public class RecyclerViewHolderProductos extends RecyclerView.ViewHolder impleme
     private List<Productos> items;
     Productos producto;
 
+    int mCartItemCount = 0;
+
     public RecyclerViewHolderProductos(View itemView, List<Productos> items) {
         super(itemView);
         itemView.setOnClickListener(this);
@@ -57,6 +59,8 @@ public class RecyclerViewHolderProductos extends RecyclerView.ViewHolder impleme
     @Override
     public void onClick(final View view) {
         producto = items.get(getAdapterPosition());
+
+
 
 //        String nombre_producto = items.get(getAdapterPosition()).getName();
 //        String recicler_precio = items.get(getAdapterPosition()).getPrecio_con_igv();

@@ -1,8 +1,12 @@
 package com.scientechperu.tiendassc.Fragmentos;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -25,6 +29,7 @@ public class PlaceholderFragment extends Fragment {
     public static final String ARG_SECTION_TITLE = "section_number";
 
 
+
     /**
      * Crea una instancia prefabricada de {@link PlaceholderFragment}
      *
@@ -39,8 +44,22 @@ public class PlaceholderFragment extends Fragment {
         return fragment;
     }
 
-
     public PlaceholderFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+// You can hide the state of the menu item here if you call getActivity().supportInvalidateOptionsMenu(); somewhere in your code
+        MenuItem menuItem = menu.findItem(R.id.action_shop);
+        menuItem.setVisible(false);
     }
 
     @Override

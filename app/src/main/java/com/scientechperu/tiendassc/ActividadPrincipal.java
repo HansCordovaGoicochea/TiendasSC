@@ -1,5 +1,6 @@
 package com.scientechperu.tiendassc;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.drawable.LayerDrawable;
@@ -61,8 +62,7 @@ public class ActividadPrincipal extends AppCompatActivity{
 
     public String CURRENT_FRAGMENT_TAG;
 
-    TextView textCartItemCount;
-    int mCartItemCount = 10;
+    AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +119,19 @@ public class ActividadPrincipal extends AppCompatActivity{
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setCancelable(false);
+        View login = getLayoutInflater().inflate(R.layout.login, null);
+        alertDialogBuilder.setView(login);
+        alertDialog = alertDialogBuilder.create();
+//        alertDialog.setCanceledOnTouchOutside(false);
+        alertDialog.show();
+
+    }
+
     private void agregarToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -127,6 +140,7 @@ public class ActividadPrincipal extends AppCompatActivity{
             // Poner ícono del drawer toggle
             ab.setHomeAsUpIndicator(R.drawable.ic_menu);
             ab.setDisplayHomeAsUpEnabled(true);
+//            ab.setDisplayShowHomeEnabled(true);
         }
 
     }
@@ -206,35 +220,19 @@ public class ActividadPrincipal extends AppCompatActivity{
 
         final MenuItem menuItem = menu.findItem(R.id.action_shop);
 
-        View actionView = MenuItemCompat.getActionView(menuItem);
-        textCartItemCount = (TextView) actionView.findViewById(R.id.cart_badge);
-        mCartItemCount = (int) Carro.count(Carro.class);
-        setupBadge(mCartItemCount);
-
-        actionView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onOptionsItemSelected(menuItem);
-            }
-        });
+//        View actionView = MenuItemCompat.getActionView(menuItem);
+//        textCartItemCount = (TextView) actionView.findViewById(R.id.cart_badge);
+//        mCartItemCount = (int) Carro.count(Carro.class);
+//        setupBadge(mCartItemCount);
+//
+//        actionView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                onOptionsItemSelected(menuItem);
+//            }
+//        });
 
         return true;
-    }
-
-    public void setupBadge(int count) {
-
-        if (textCartItemCount != null) {
-            if (count == 0) {
-                if (textCartItemCount.getVisibility() != View.GONE) {
-                    textCartItemCount.setVisibility(View.GONE);
-                }
-            } else {
-                textCartItemCount.setText(String.valueOf(Math.min(count, 99)));
-                if (textCartItemCount.getVisibility() != View.VISIBLE) {
-                    textCartItemCount.setVisibility(View.VISIBLE);
-                }
-            }
-        }
     }
 
 
@@ -246,19 +244,19 @@ public class ActividadPrincipal extends AppCompatActivity{
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
                 return true;
-            case R.id.action_shop:
-                Bundle args = new Bundle();
-                args.putString(FragmentCarrito.ARG_SECTION_TITLE, "Carrito");
-                fragment = FragmentCarrito.newInstance("Carrito");
-                fragment.setArguments(args);
-
-                fragmentManager
-                        .beginTransaction()
-                        .replace(R.id.contenedor_principal, fragment)
-                        .commit();
-                setTitle("Carrito"); // Setear título actual
-//                Toast.makeText(getApplicationContext(), "Carrrioto", Toast.LENGTH_SHORT).show();
-                return true;
+//            case R.id.action_shop:
+//                Bundle args = new Bundle();
+//                args.putString(FragmentCarrito.ARG_SECTION_TITLE, "Carrito");
+//                fragment = FragmentCarrito.newInstance("Carrito");
+//                fragment.setArguments(args);
+//
+//                fragmentManager
+//                        .beginTransaction()
+//                        .replace(R.id.contenedor_principal, fragment)
+//                        .commit();
+//                setTitle("Carrito"); // Setear título actual
+////                Toast.makeText(getApplicationContext(), "Carrrioto", Toast.LENGTH_SHORT).show();
+//                return true;
         }
         return super.onOptionsItemSelected(item);
     }
