@@ -147,8 +147,12 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         android:layout_marginTop="10dp"
-        android:background="#000"
         android:foreground="?attr/selectableItemBackground"
         android:text="REALIZAR PEDIDO"
-        android:textColor="#fff" />
+        android:layout_margin="22dp"
+        android:background="@color/accentColor"
+        android:textColor="#fff"
+        android:textSize="18sp"
+        android:clickable="true"/>
+
 </LinearLayout>

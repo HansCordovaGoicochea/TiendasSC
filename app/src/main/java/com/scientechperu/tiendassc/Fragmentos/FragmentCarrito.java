@@ -1,15 +1,20 @@
 package com.scientechperu.tiendassc.Fragmentos;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -75,7 +80,7 @@ public class FragmentCarrito extends Fragment {
     public TextView total;
     public TextView subtotal;
     public TextView igv;
-
+    Tienda tienda;
 
     String id_address = "0";
     String id_customer = "4"; // el cliente 4 es prueba
@@ -86,6 +91,7 @@ public class FragmentCarrito extends Fragment {
     int mCartItemCount = 0;
 
     SharedPreferences prefs;
+    private static final int REQUEST_CALL_PHONE = 1;
 
     public FragmentCarrito() {
         // Required empty public constructor
@@ -96,6 +102,13 @@ public class FragmentCarrito extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+        // To load the data at a later time
+        prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
+        Integer idtienda_current = prefs.getInt("id_shop", 0);
+
+//        Tienda tienda = Tienda.findById(Tienda.class, idtienda_current);
+        List<Tienda> tiendas = Tienda.find(Tienda.class, "idshop = ?", ""+idtienda_current);
+        tienda = tiendas.get(0);
     }
 
 
@@ -239,13 +252,6 @@ public class FragmentCarrito extends Fragment {
 
     public void xmlSendCart(){
 
-//                'http://mystore.com/api/customers?schema=blank'
-
-        // To load the data at a later time
-        prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
-        Integer idtienda_current = prefs.getInt("id_shop", 0);
-
-        Tienda tienda = Tienda.findById(Tienda.class, idtienda_current);
 
         String url = UrlRaiz.domain+"/"+tienda.getVirtual_uri()+"api/carts/"+UrlRaiz.ws_key+"&schema=blank";
 
@@ -262,6 +268,7 @@ public class FragmentCarrito extends Fragment {
             @Override
             public void onResponse(String response) {
                 Log.e(TAG, response.toString());
+                Toast.makeText(getContext(), "Pedido realizado", Toast.LENGTH_SHORT).show();
                 pDialog.hide();
 
             }
@@ -281,7 +288,7 @@ public class FragmentCarrito extends Fragment {
 
             @Override
             public byte[] getBody() throws AuthFailureError {
-                String postData = generaXMLCliente(); // TODO get your final output
+                String postData = generaXMLCarro(); // TODO get your final output
 //                        Log.e(TAG, postData);
                 try {
                     return postData == null ? null :
@@ -313,7 +320,7 @@ public class FragmentCarrito extends Fragment {
         return Double.valueOf(twoDForm.format(d));
     }
 
-    public String generaXMLCliente() {
+    public String generaXMLCarro() {
 
         String format= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<prestashop xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n" +
@@ -359,7 +366,7 @@ public class FragmentCarrito extends Fragment {
     private void ShowPopupWindow(){
         try {
 
-//            xmlSendCart(); // para enviar a la web los datos del carrito
+            xmlSendCart(); // descomentar para enviar a la web los datos del carrito
 
             ImageView btncall, btnsound, btncamera, btnvideo,btngallary,btnwrite;
 
@@ -377,8 +384,10 @@ public class FragmentCarrito extends Fragment {
             btncall.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.e(TAG, " button call press ");
-                    alertDialog.dismiss();
+//                    Log.e(TAG, tienda.getTelefono());
+//                    dialContactPhone(tienda.getTelefono());
+                    MakePhoneCall(tienda.getTelefono());
+
                 }
 
             });
@@ -397,6 +406,63 @@ public class FragmentCarrito extends Fragment {
 
         }
     }
+
+    private void dialContactPhone(final String phoneNumber) {
+        startActivity(new Intent(Intent.ACTION_CALL, Uri.fromParts("tel", phoneNumber, null)));
+//        startActivity(new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phoneNumber, null)));
+
+    }
+    public void MakePhoneCall(final String phoneNumber){
+        String number = ("tel:" + phoneNumber);
+        Intent mIntent = new Intent(Intent.ACTION_CALL);
+        mIntent.setData(Uri.parse(number));
+// Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.CALL_PHONE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.CALL_PHONE},
+                    REQUEST_CALL_PHONE);
+
+            // MY_PERMISSIONS_REQUEST_CALL_PHONE is an
+            // app-defined int constant. The callback method gets the
+            // result of the request.
+        } else {
+            //You already have permission
+            try {
+                startActivity(mIntent);
+                alertDialog.dismiss();
+            } catch(SecurityException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CALL_PHONE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the phone call
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
     public void setupBadge(int count) {
 
         if (textCartItemCount != null) {

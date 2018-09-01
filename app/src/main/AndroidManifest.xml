@@ -6,6 +6,11 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_NUMBERS"/>
+
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
+
 
     <application
         android:name="com.orm.SugarApp"
@@ -42,8 +47,6 @@
             android:name="DOMAIN_PACKAGE_NAME"
             android:value="com.scientechperu.tiendassc" />
 
-        <!-- <activity android:name=".ActivividadCarrito"></activity> -->
-        <activity android:name=".ActividadCarrito"></activity>
     </application>
 
 </manifest>

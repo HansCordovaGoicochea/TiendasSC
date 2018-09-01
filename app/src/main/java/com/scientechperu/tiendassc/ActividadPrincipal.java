@@ -1,17 +1,31 @@
 package com.scientechperu.tiendassc;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
@@ -19,26 +33,51 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telephony.TelephonyManager;
+import android.util.Log;
+import android.util.Patterns;
+import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.StringRequest;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.credentials.Credential;
+import com.google.android.gms.auth.api.credentials.CredentialPickerConfig;
+import com.google.android.gms.auth.api.credentials.HintRequest;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.scientechperu.tiendassc.Clases.Carro;
 import com.scientechperu.tiendassc.Clases.CategoriaTienda;
+import com.scientechperu.tiendassc.Clases.Tienda;
+import com.scientechperu.tiendassc.Clases.UrlRaiz;
 import com.scientechperu.tiendassc.Entendiendo.Utils;
 import com.scientechperu.tiendassc.Fragmentos.FragmentCarrito;
 import com.scientechperu.tiendassc.Fragmentos.FragmentoInicio;
 import com.scientechperu.tiendassc.Fragmentos.PlaceholderFragment;
+import com.scientechperu.tiendassc.SingletonVolley.MySingleton;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ActividadPrincipal extends AppCompatActivity{
+
+
+public class ActividadPrincipal extends AppCompatActivity {
 
     /*
      * La variable currentView sirve de "singleton" para saber en que vista se
@@ -61,8 +100,7 @@ public class ActividadPrincipal extends AppCompatActivity{
     CategoriaTienda pojoCaTienda;
 
     public String CURRENT_FRAGMENT_TAG;
-
-    AlertDialog alertDialog;
+    private static final int REQUEST_CALL_PHONE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,11 +109,11 @@ public class ActividadPrincipal extends AppCompatActivity{
 
         agregarToolbar();
 
-        pd = ProgressDialog.show(this,"Cargando...","Porfavor espere...");
-
-        try{
+        pd = ProgressDialog.show(this, "Cargando...", "Porfavor espere...");
+        permisoCallPhone(); //permiso para hacer llamadas
+        try {
             Thread.sleep(2000);
-        }catch(Exception e){
+        } catch (Exception e) {
 
         }
 
@@ -119,18 +157,48 @@ public class ActividadPrincipal extends AppCompatActivity{
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setCancelable(false);
-        View login = getLayoutInflater().inflate(R.layout.login, null);
-        alertDialogBuilder.setView(login);
-        alertDialog = alertDialogBuilder.create();
-//        alertDialog.setCanceledOnTouchOutside(false);
-        alertDialog.show();
 
+    public void permisoCallPhone(){
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CALL_PHONE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CALL_PHONE},
+                    REQUEST_CALL_PHONE);
+
+            // MY_PERMISSIONS_REQUEST_CALL_PHONE is an
+            // app-defined int constant. The callback method gets the
+            // result of the request.
+        }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CALL_PHONE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the phone call
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+
 
     private void agregarToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -261,62 +329,4 @@ public class ActividadPrincipal extends AppCompatActivity{
         return super.onOptionsItemSelected(item);
     }
 
-//    /**
-//     * Muestra una {@link Snackbar} prefabricada
-//     *
-//     * @param msg Mensaje a proyectar
-//     */
-//    private void showSnackBar(String msg) {
-//        Snackbar.make(findViewById(R.id.), msg, Snackbar.LENGTH_SHORT).show();
-//    }
-
-
-
-
-    /**
-     * Este metodo es llamado cuando la pantalla gira y/o cambia de
-     * tamaño(non-Javadoc) En el manifest se agrego la siguiente linea
-     * "android:configChanges="orientation|screenSize" la cual este metodo
-     * captura cada ves que la pantalla cambia
-     *
-     * @see android.app.Activity#onConfigurationChanged(android.content.res.Configuration)
-     */
-//
-//    public void onConfigurationChanged(Configuration newConfig) {
-//        super.onConfigurationChanged(newConfig);
-////         cambia el view a lo que estaba antes de cambiar la orientación
-////        setContentView(currentView);
-////         Checks the orientation of the screen
-//        if(fragment!=null && fragment.isResumed()){
-//
-//            //do nothing here if we're showing the fragment
-//
-//        }else{
-//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT); // otherwise lock in portrait
-//
-//        }
-//        super.onConfigurationChanged(newConfig);
-//
-//    }
-//
-//    private boolean isCameraFragmentPost() {
-//        Fragment fr = getSupportFragmentManager().findFragmentByTag(TAG_PIC_TAKING);
-//        return (fr != null && fr.isResumed() && fr.getClass().isInstance(PlaceholderFragment.class));
-//    }
-
-//    @Override
-//    protected void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
-//        String fragmentTag = fragmentManager.findFragmentById(R.id.contenedor_principal).getTag();
-//        outState.putString("Frag", fragmentTag);
-////        outState.putInt("Frag", currentView);
-//
-//    }
-//
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        CURRENT_FRAGMENT_TAG = savedInstanceState.getString("Frag");
-//        seleccionarItem(navigationView.getMenu().add(CURRENT_FRAGMENT_TAG));
-//    }
 }
