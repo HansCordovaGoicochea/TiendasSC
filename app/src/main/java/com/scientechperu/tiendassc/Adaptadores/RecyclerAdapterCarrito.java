@@ -2,13 +2,20 @@ package com.scientechperu.tiendassc.Adaptadores;
 
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.NumberPicker;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -23,6 +30,7 @@ import com.scientechperu.tiendassc.Clases.Productos;
 import com.scientechperu.tiendassc.Clases.UrlRaiz;
 import com.scientechperu.tiendassc.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -55,7 +63,7 @@ public class RecyclerAdapterCarrito extends RecyclerView.Adapter<RecyclerView.Vi
 
     @SuppressLint("SetTextI18n")
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
 
 
         final Carro item = items.get(position);
@@ -114,7 +122,77 @@ public class RecyclerAdapterCarrito extends RecyclerView.Adapter<RecyclerView.Vi
         ((RecyclerViewHolderCarrito) holder).cantidad_producto_car.setText("Cant: "+item.getCantidad());
         ((RecyclerViewHolderCarrito) holder).precio_producto_car.setText("S/"+item.getImporte());
 
+        ((RecyclerViewHolderCarrito) holder).row_delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RelativeLayout linearLayout = new RelativeLayout(holder.itemView.getContext());
+                final NumberPicker aNumberPicker = new NumberPicker(holder.itemView.getContext());
+                aNumberPicker.setMaxValue(item.getCantidad());
+                aNumberPicker.setMinValue(1);
 
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(50, 50);
+                RelativeLayout.LayoutParams numPicerParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                numPicerParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+
+                linearLayout.setLayoutParams(params);
+                linearLayout.addView(aNumberPicker,numPicerParams);
+
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(((RecyclerViewHolderCarrito) holder).itemView.getContext());
+                alertDialogBuilder.setTitle("¿Cuantos eliminar?");
+                alertDialogBuilder.setView(linearLayout);
+                alertDialogBuilder
+                        .setCancelable(false)
+                        .setPositiveButton("Eliminar",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+//                                        Log.e("","New Quantity Value : "+ aNumberPicker.getValue());
+//                                        Toast.makeText(holder.itemView.getContext(), ""+aNumberPicker.getValue(), Toast.LENGTH_SHORT).show();
+                                        Carro carro = Carro.findById(Carro.class, item.getId());
+                                        if (aNumberPicker.getValue() == item.getCantidad()){
+                                            carro.delete();
+                                            removeAt(position);
+                                        }
+                                        else{
+                                            Integer cantidad_actualizada =  item.getCantidad() - aNumberPicker.getValue();
+                                            Double importe = (cantidad_actualizada * item.getImporte());
+                                            carro.setImporte(importe);
+                                            carro.setCantidad(cantidad_actualizada);
+                                            carro.save(); // updates the previous entry with new values.
+                                            List<Carro> carros = Carro.listAll(Carro.class);
+                                            update(carros);
+
+                                        }
+
+                                    }
+                                })
+                        .setNegativeButton("Cancelar",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,
+                                                        int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+
+            }
+        });
+
+
+
+
+    }
+
+    public void removeAt(int position) {
+        items.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, items.size());
+    }
+
+    public void update(List<Carro> datas){
+        items.clear();
+        items.addAll(datas);
+        notifyDataSetChanged();
     }
 
     @Override

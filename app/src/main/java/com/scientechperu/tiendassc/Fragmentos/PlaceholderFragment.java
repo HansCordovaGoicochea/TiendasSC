@@ -53,6 +53,11 @@ public class PlaceholderFragment extends Fragment {
         setHasOptionsMenu(true);
 
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        getActivity().setTitle(getArguments().getString(ARG_SECTION_TITLE));
+    }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
@@ -61,6 +66,7 @@ public class PlaceholderFragment extends Fragment {
         MenuItem menuItem = menu.findItem(R.id.action_shop);
         menuItem.setVisible(false);
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

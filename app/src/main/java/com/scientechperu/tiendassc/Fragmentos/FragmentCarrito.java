@@ -3,8 +3,10 @@ package com.scientechperu.tiendassc.Fragmentos;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -209,7 +211,6 @@ public class FragmentCarrito extends Fragment {
 
         Button realizar_pedido = (Button) view.findViewById(R.id.btnPasar);
 
-
         double totalSum = 0.0;
         double subtotalSum = 0.0;
         double igvSum = 0.0;
@@ -244,6 +245,7 @@ public class FragmentCarrito extends Fragment {
 
             }
         });
+
 
 
         return view;
@@ -366,7 +368,7 @@ public class FragmentCarrito extends Fragment {
     private void ShowPopupWindow(){
         try {
 
-            xmlSendCart(); // descomentar para enviar a la web los datos del carrito
+//            xmlSendCart(); // descomentar para enviar a la web los datos del carrito
 
             ImageView btncall, btnsound, btncamera, btnvideo,btngallary,btnwrite;
 
@@ -431,8 +433,10 @@ public class FragmentCarrito extends Fragment {
         } else {
             //You already have permission
             try {
+
                 startActivity(mIntent);
                 alertDialog.dismiss();
+
             } catch(SecurityException e) {
                 e.printStackTrace();
             }
