@@ -226,8 +226,9 @@ la URI para realizar la petición al servicio web.*/
                                 Integer id_caja  = jsObjectTiendas.getInt("id_apertura_caja");
                                 String telefono  = jsObjectTiendas.getString("phone");
                                 String nombre_categoria  = categoria;
+                                String celular  = jsObjectTiendas.getString("fax");
 
-                                pojoTienda = new Tienda(id_store, id_shop, nombre, razon_social, ruc, virtual_uri, domain, latitud, longitud, id_imagen, direccion, horarios, id_caja, telefono, categoria);
+                                pojoTienda = new Tienda(id_store, id_shop, nombre, razon_social, ruc, virtual_uri, domain, latitud, longitud, id_imagen, direccion, horarios, id_caja, telefono, categoria, celular);
                                 //Se añade el objeto creado a la colección de tipo List<Tienda>.
                                 pojoTienda.save(); //guardar en la DB
 //                                Tienda note2 = Tienda.findById(Tienda.class, id_shop);

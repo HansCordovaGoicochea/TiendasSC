@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -16,6 +17,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -73,8 +75,9 @@ import com.scientechperu.tiendassc.SingletonVolley.MySingleton;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 
 public class ActividadPrincipal extends AppCompatActivity {
@@ -101,6 +104,10 @@ public class ActividadPrincipal extends AppCompatActivity {
 
     public String CURRENT_FRAGMENT_TAG;
     private static final int REQUEST_CALL_PHONE = 1;
+    private static final int REQUEST_READ_CONTACTS = 2;
+    private static final int REQUEST_WRITE_CONTACTS = 3;
+    private static boolean isRationale = true;
+    private static boolean isFirst = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,7 +117,12 @@ public class ActividadPrincipal extends AppCompatActivity {
         agregarToolbar();
 
         pd = ProgressDialog.show(this, "Cargando...", "Porfavor espere...");
-        permisoCallPhone(); //permiso para hacer llamadas
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            askPermissions(true);
+        }
+//        permisoCallPhone(); //permiso para hacer llamadas
+//        permisoREAD_CONTACTS(); //permiso para hacer llamadas
+//        permisoWRITE_CONTACTS(); //permiso para hacer llamadas
         try {
             Thread.sleep(2000);
         } catch (Exception e) {
@@ -174,29 +186,88 @@ public class ActividadPrincipal extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_CALL_PHONE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+    public void permisoREAD_CONTACTS(){
 
-                    // permission was granted, yay! Do the phone call
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
 
-                } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    REQUEST_READ_CONTACTS);
 
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
+            // MY_PERMISSIONS_REQUEST_CALL_PHONE is an
+            // app-defined int constant. The callback method gets the
+            // result of the request.
         }
     }
+    public void permisoWRITE_CONTACTS(){
+
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_CONTACTS},
+                    REQUEST_WRITE_CONTACTS);
+
+            // MY_PERMISSIONS_REQUEST_CALL_PHONE is an
+            // app-defined int constant. The callback method gets the
+            // result of the request.
+        }
+    }
+
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode,
+//                                           String permissions[], int[] grantResults) {
+//        switch (requestCode) {
+//            case REQUEST_CALL_PHONE: {
+//                // If request is cancelled, the result arrays are empty.
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//
+//                    // permission was granted, yay! Do the phone call
+//
+//                } else {
+//
+//                    // permission denied, boo! Disable the
+//                    // functionality that depends on this permission.
+//                }
+//                return;
+//            }
+//            case REQUEST_READ_CONTACTS: {
+//                // If request is cancelled, the result arrays are empty.
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//
+//                    // permission was granted, yay! Do the phone call
+//
+//                } else {
+//
+//                    // permission denied, boo! Disable the
+//                    // functionality that depends on this permission.
+//                }
+//                return;
+//            }
+//            case REQUEST_WRITE_CONTACTS: {
+//                // If request is cancelled, the result arrays are empty.
+//                if (grantResults.length > 0
+//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//
+//                    // permission was granted, yay! Do the phone call
+//
+//                } else {
+//
+//                    // permission denied, boo! Disable the
+//                    // functionality that depends on this permission.
+//                }
+//                return;
+//            }
+//
+//            // other 'case' lines to check for other
+//            // permissions this app might request
+//        }
+//    }
 
 
 
@@ -327,6 +398,119 @@ public class ActividadPrincipal extends AppCompatActivity {
 //                return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    private void askPermissions(boolean isForOpen) {
+        isRationale = false;
+        List permissionsRequired = new ArrayList();
+
+        final List<String> permissionsList = new ArrayList<String>();
+//        if (!checkPermission(permissionsList, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+//            permissionsRequired.add("Write External Storage");
+        if (!checkPermission(permissionsList, Manifest.permission.CALL_PHONE))
+            permissionsRequired.add("Call phone");
+        if (!checkPermission(permissionsList, Manifest.permission.READ_PHONE_STATE))
+            permissionsRequired.add("Read phone state");
+        if (!checkPermission(permissionsList, Manifest.permission.READ_CONTACTS))
+            permissionsRequired.add("Read Contacts");
+//        if (!checkPermission(permissionsList, Manifest.permission.RECEIVE_SMS))
+//            permissionsRequired.add("Receive SMS");
+//        if (!checkPermission(permissionsList, Manifest.permission.GET_ACCOUNTS))
+//            permissionsRequired.add("Get Accounts");
+        if (!checkPermission(permissionsList, Manifest.permission.ACCESS_COARSE_LOCATION))
+            permissionsRequired.add("Location");
+        if (!checkPermission(permissionsList, Manifest.permission.ACCESS_FINE_LOCATION))
+            permissionsRequired.add("Location");
+
+        if (permissionsList.size() > 0 && !isRationale) {
+            if (permissionsRequired.size() > 0) {
+
+            }
+            if (isForOpen) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    ActivityCompat.requestPermissions(this, permissionsList.toArray(new String[permissionsList.size()]),
+                            11);
+                }
+            }
+
+        } else if (isRationale) {
+            if (isForOpen) {
+
+                new android.support.v7.app.AlertDialog.Builder(this, R.style.Theme_TiendasSC)
+                        .setTitle("Permission Alert")
+                        .setMessage("You need to grant permissions manually. Go to permission and grant all permissions.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                                intent.setData(uri);
+                                startActivityForResult(intent, 123);
+                            }
+                        })
+                        .show();
+            }
+        }
+//        else {
+//            startActivity(new Intent(PermissionsActivity.this, SplashActivity.class));
+//            finish();
+//        }
+    }
+
+    private boolean checkPermission(List permissionsList, String permission) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                permissionsList.add(permission);
+                // Check for Rationale Option
+                if (!isFirst) {
+                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+                        isRationale = true;
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 11:
+                Map<String, Integer> perms = new HashMap<String, Integer>();
+                // Initial
+                perms.put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.CALL_PHONE, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.READ_PHONE_STATE, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.READ_CONTACTS, PackageManager.PERMISSION_GRANTED);
+                perms.put(Manifest.permission.RECEIVE_SMS, PackageManager.PERMISSION_GRANTED);
+                // Fill with results
+                for (int i = 0; i < permissions.length; i++) {
+                    perms.put(permissions[i], grantResults[i]);
+                }
+                // Check for ACCESS_FINE_LOCATION
+                if (perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                        perms.get(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED &&
+                        perms.get(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED &&
+                        perms.get(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED &&
+                        perms.get(Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED) {
+                    // All Permissions Granted
+//                    startActivity(new Intent(PermissionsActivity.this, SplashActivity.class));
+//                    finish();
+                } else {
+                    // Permission Denied
+                    Toast.makeText(this, "Some Permission is Denied.", Toast.LENGTH_SHORT)
+                            .show();
+                    isFirst = false;
+                    askPermissions(true);
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        }
     }
 
 }

@@ -2,11 +2,17 @@ package com.scientechperu.tiendassc.Adaptadores;
 
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,6 +34,7 @@ import com.bumptech.glide.request.target.Target;
 import com.scientechperu.tiendassc.Clases.Carro;
 import com.scientechperu.tiendassc.Clases.Productos;
 import com.scientechperu.tiendassc.Clases.UrlRaiz;
+import com.scientechperu.tiendassc.Fragmentos.FragmentCarrito;
 import com.scientechperu.tiendassc.R;
 
 import java.util.ArrayList;
@@ -154,7 +161,7 @@ public class RecyclerAdapterCarrito extends RecyclerView.Adapter<RecyclerView.Vi
                                         }
                                         else{
                                             Integer cantidad_actualizada =  item.getCantidad() - aNumberPicker.getValue();
-                                            Double importe = (cantidad_actualizada * item.getImporte());
+                                            Double importe = (cantidad_actualizada * item.getPrecio_producto());
                                             carro.setImporte(importe);
                                             carro.setCantidad(cantidad_actualizada);
                                             carro.save(); // updates the previous entry with new values.
@@ -162,6 +169,13 @@ public class RecyclerAdapterCarrito extends RecyclerView.Adapter<RecyclerView.Vi
                                             update(carros);
 
                                         }
+
+                                        // para poder actualizar el fragment debemos de crear el fragmen con u TAG sino vas a estar sufriendo con esto
+                                        Fragment fm = ((FragmentActivity) holder.itemView.getContext()).getSupportFragmentManager().findFragmentByTag("FragmentCarrito");
+                                        final FragmentTransaction ft = ((FragmentActivity) holder.itemView.getContext()).getSupportFragmentManager().beginTransaction();
+                                        ft.detach(fm);
+                                        ft.attach(fm);
+                                        ft.commit();
 
                                     }
                                 })

@@ -9,7 +9,13 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.READ_PHONE_NUMBERS"/>
 
+    <!-- Need below permissions.-->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+
     <uses-permission android:name="android.permission.CALL_PHONE"/>
+
+
 
 
     <application
@@ -39,7 +45,7 @@
             android:value="appscdbs.db" />
         <meta-data
             android:name="VERSION"
-            android:value="2" />
+            android:value="3" />
         <meta-data
             android:name="QUERY_LOG"
             android:value="true" />

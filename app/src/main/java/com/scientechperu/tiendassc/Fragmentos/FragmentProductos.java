@@ -359,7 +359,7 @@ public class FragmentProductos extends Fragment{
 
                 // Replace whatever is in the fragment_container view with this fragment,
                 // and add the transaction to the back stack so the user can navigate back
-                fragmentTransaction.replace(R.id.contenedor_principal, fragment);
+                fragmentTransaction.replace(R.id.contenedor_principal, fragment, "FragmentCarrito");
                 fragmentTransaction.addToBackStack(null);
 
                 // Commit the transaction

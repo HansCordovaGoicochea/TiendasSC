@@ -19,6 +19,7 @@ public class Tienda extends SugarRecord {
     private Integer id_caja;
     private String telefono;
     private String categoria;
+    private String celular_whatsapp;
 
 
 
@@ -27,7 +28,7 @@ public class Tienda extends SugarRecord {
 
     public Tienda(Integer id_store, Integer id_shop, String nombre, String razon_social, String ruc, String virtual_uri, String domain,
                   String latitud, String longitud, Integer id_imagen, String direccion, String horarios, Integer id_caja,
-                  String telefono, String categoria) {
+                  String telefono, String categoria, String celular_whatsapp) {
         this.id_store = id_store;
         this.id_shop = id_shop;
         this.nombre = nombre;
@@ -43,6 +44,7 @@ public class Tienda extends SugarRecord {
         this.id_caja = id_caja;
         this.telefono = telefono;
         this.categoria = categoria;
+        this.celular_whatsapp = celular_whatsapp;
     }
 
     public Integer getId_store() {
@@ -166,4 +168,11 @@ public class Tienda extends SugarRecord {
         this.categoria = categoria;
     }
 
+    public String getCelular_whatsapp() {
+        return celular_whatsapp;
+    }
+
+    public void setCelular_whatsapp(String celular_whatsapp) {
+        this.celular_whatsapp = celular_whatsapp;
+    }
 }

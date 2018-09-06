@@ -2,18 +2,25 @@ package com.scientechperu.tiendassc.Fragmentos;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ContentProviderOperation;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
+import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -22,6 +29,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -50,10 +58,12 @@ import com.scientechperu.tiendassc.Adaptadores.RecyclerAdapterProductos;
 import com.scientechperu.tiendassc.Clases.Carro;
 import com.scientechperu.tiendassc.Clases.Tienda;
 import com.scientechperu.tiendassc.Clases.UrlRaiz;
+import com.scientechperu.tiendassc.Clases.Usuario;
 import com.scientechperu.tiendassc.Entendiendo.Utils;
 import com.scientechperu.tiendassc.R;
 import com.scientechperu.tiendassc.SingletonVolley.MySingleton;
 
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -68,6 +78,7 @@ public class FragmentCarrito extends Fragment {
     public static final String ARG_SECTION_TITLE = "Carrito";
     private static final String TAG = FragmentCarrito.class.getSimpleName();
     public static final String ARG_SECTION_URL = "productos_url";
+    private static Cursor cursor;
     public String URL = "";
 
     public RecyclerView recyclerView;
@@ -93,7 +104,11 @@ public class FragmentCarrito extends Fragment {
     int mCartItemCount = 0;
 
     SharedPreferences prefs;
+
     private static final int REQUEST_CALL_PHONE = 1;
+
+    private static final int WHATSAPP_NUMBER = 1;
+
 
     public FragmentCarrito() {
         // Required empty public constructor
@@ -207,16 +222,17 @@ public class FragmentCarrito extends Fragment {
         subtotal = view.findViewById(R.id.txtSubtotal);
         igv = view.findViewById(R.id.txtIgv);
 
-        cantidad_productos.setText((int) Carro.count(Carro.class, "idshop = ?", vals)+" Productos para pedir");
 
         Button realizar_pedido = (Button) view.findViewById(R.id.btnPasar);
 
         double totalSum = 0.0;
         double subtotalSum = 0.0;
         double igvSum = 0.0;
+        Integer cantidadP = 0;
 
         for (int i = 0; i < CarroList.size(); i++) {
             totalSum += CarroList.get(i).getImporte();
+            cantidadP += CarroList.get(i).getCantidad();
         }
         if (totalSum > 0){
             subtotalSum = totalSum / 1.18;
@@ -225,6 +241,10 @@ public class FragmentCarrito extends Fragment {
         }else{
             realizar_pedido.setEnabled(false);
         }
+
+        cantidad_productos.setText("(" + cantidadP + ") Productos en el detalle para pedir");
+//        cantidad_productos.setText((int) Carro.count(Carro.class, "idshop = ?", vals)+" Productos para pedir");
+
         total.setText("S/"+ roundTwoDecimals(totalSum));
         subtotal.setText("S/"+roundTwoDecimals(subtotalSum));
         igv.setText("S/"+roundTwoDecimals(igvSum));
@@ -241,12 +261,8 @@ public class FragmentCarrito extends Fragment {
                 }else{
                     Toast.makeText(getActivity(),"No hay conexión a internet",Toast.LENGTH_SHORT).show();
                 }
-
-
             }
         });
-
-
 
         return view;
     }
@@ -323,6 +339,14 @@ public class FragmentCarrito extends Fragment {
     }
 
     public String generaXMLCarro() {
+        String[] vals = {
+                String.valueOf(tienda.getId_shop())
+        };
+        List<Usuario> usuarios = Usuario.find(Usuario.class, "idshop = ?", vals);
+        if (usuarios.size() > 0){
+            Usuario usuario = usuarios.get(0);
+            id_customer = usuario.getIdcustomer();
+        }
 
         String format= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<prestashop xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n" +
@@ -398,6 +422,9 @@ public class FragmentCarrito extends Fragment {
                 @Override
                 public void onClick(View v) {
                     Log.e(TAG, " sound  touch");
+
+                    callWhatsApp(tienda.getCelular_whatsapp(),tienda.getNombre(), getActivity());
+
                     alertDialog.dismiss();
 
                 }
@@ -406,6 +433,101 @@ public class FragmentCarrito extends Fragment {
 
         }catch (Exception e){
 
+        }
+    }
+
+    public static void callWhatsApp(String phoneNumber, String name, Activity activity) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        Uri uri = getUriFromPhoneNumber(phoneNumber, activity.getApplicationContext(), name, activity);
+        intent.setDataAndType(uri, "vnd.android.cursor.item/vnd.com.whatsapp.voip.call");
+        intent.setPackage("com.whatsapp");
+        activity.startActivity(intent);
+    }
+
+    private static Uri getUriFromPhoneNumber(String phoneNumber, Context context, String name, Activity activity) {
+        Uri uri = null;
+        String contactId = getContactIdByPhoneNumber(phoneNumber, context);
+        Log.e(TAG, "getUriFromPhoneNumber contactId ->   "+contactId);
+        // check for exist phone number
+        if (!TextUtils.isEmpty(contactId)) {
+            cursor = activity.getContentResolver().query(
+                    ContactsContract.Data.CONTENT_URI,
+                    new String[]{ContactsContract.Data._ID},
+                    ContactsContract.Data.MIMETYPE + "=? AND " + ContactsContract.Data.CONTACT_ID + " = ?",
+                    new String[]{"vnd.android.cursor.item/vnd.com.whatsapp.voip.call", contactId}, null);
+
+//            cursor = context.getContentResolver().query(
+//                    ContactsContract.Data.CONTENT_URI,
+//                    new String[]{ContactsContract.Data._ID},
+//                    ContactsContract.Data.DISPLAY_NAME + "=? and "+ContactsContract.Data.MIMETYPE+ "=?",
+//                    new String[] {name,"vnd.android.cursor.item/vnd.com.whatsapp.voip.call"},
+//                    ContactsContract.Contacts.DISPLAY_NAME);
+
+            Log.e(TAG, "getUriFromPhoneNumber contactId ->   "+ ContactsContract.Data.MIMETYPE + "=? AND " + ContactsContract.Data.CONTACT_ID + " = ?");
+            Log.e(TAG, "cursor.getCount() ->   "+ cursor.getCount());
+
+            if (cursor != null) {
+                // here in the first time equals false and not will work, need fix
+//                cursor.moveToFirst();
+                while (cursor.moveToNext()) {
+                    String id = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Data._ID));
+                    if (!TextUtils.isEmpty(id)) {
+                        uri = Uri.parse(ContactsContract.Data.CONTENT_URI + "/" + id);
+                        Log.e(TAG, "uriuri ->   "+uri);
+                        break;
+                    }
+                }
+                cursor.close();
+            }
+        } else {
+            addToContactsNewNumber(phoneNumber, name, activity);
+        }
+        return uri;
+    }
+
+    // find phone number in contacts
+    private static String getContactIdByPhoneNumber(String phoneNumber, Context context) {
+        ContentResolver contentResolver = context.getContentResolver();
+        String contactId = null;
+        Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phoneNumber));
+        String[] projection = new String[]{ContactsContract.PhoneLookup._ID};
+        Cursor cursor = contentResolver.query(uri, projection, null, null, null);
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                contactId = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup._ID));
+            }
+            cursor.close();
+        }
+        return contactId;
+    }
+
+    private static void addToContactsNewNumber(String number, String name, Activity activity) {
+        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+        int rawContactInsertIndex = ops.size();
+        ops.add(ContentProviderOperation.newInsert(
+                ContactsContract.RawContacts.CONTENT_URI)
+                .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
+                .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null)
+                .build());
+        ops.add(ContentProviderOperation.newInsert(
+                ContactsContract.Data.CONTENT_URI)
+                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, rawContactInsertIndex)
+                .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+                .withValue(ContactsContract.CommonDataKinds.StructuredName.DISPLAY_NAME, name).build());
+        ops.add(ContentProviderOperation.
+                newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, rawContactInsertIndex)
+                .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, number)
+                .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)
+                .build());
+        try {
+            activity.getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+            callWhatsApp(number, name, activity);
+            Log.e(TAG, "numbernumbernumbernumber ->   "+number);
+        } catch (RemoteException | OperationApplicationException e) {
+            e.printStackTrace();
         }
     }
 
