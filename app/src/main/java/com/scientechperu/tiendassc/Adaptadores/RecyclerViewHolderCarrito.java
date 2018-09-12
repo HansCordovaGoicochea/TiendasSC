@@ -27,6 +27,7 @@ public class RecyclerViewHolderCarrito extends RecyclerView.ViewHolder implement
     public TextView nombre_producto_car;
     public TextView cantidad_producto_car;
     public TextView precio_producto_car;
+    public TextView precio_unit_car;
     public final ProgressBar progressBarCarrito;
     public ImageView row_delete;
 
@@ -40,6 +41,7 @@ public class RecyclerViewHolderCarrito extends RecyclerView.ViewHolder implement
         imagen_car = (ImageView) itemView.findViewById(R.id.imagen_producto_carrito);
         nombre_producto_car = (TextView) itemView.findViewById(R.id.nombre_producto_carrito);
         cantidad_producto_car = (TextView) itemView.findViewById(R.id.cantidad_pedida_carrito);
+        precio_unit_car = (TextView) itemView.findViewById(R.id.precio_unit_carrito);
         precio_producto_car = (TextView) itemView.findViewById(R.id.precio_producto_carrito);
         progressBarCarrito = (ProgressBar) itemView.findViewById(R.id.homeprogress_carrito);
         row_delete = itemView.findViewById(R.id.img_row_delete);

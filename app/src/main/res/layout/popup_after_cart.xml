@@ -32,7 +32,6 @@
             android:layout_height="1dip"
             android:background="@color/md_grey_200" />
     </LinearLayout>
-
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -65,7 +64,6 @@
             android:text="Llamar Celular"
             android:textColor="@color/md_white_1000"/>
     </LinearLayout>
-
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

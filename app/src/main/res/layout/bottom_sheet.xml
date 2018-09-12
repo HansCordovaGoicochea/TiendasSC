@@ -4,7 +4,7 @@
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#fff"
+    android:background="#d942a5f5"
     android:orientation="vertical"
     android:padding="@dimen/margin10"
     app:behavior_hideable="true"
@@ -57,7 +57,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            app:np_dividerColor="@color/primaryColor"
+            app:np_dividerColor="@color/md_white_1000"
             app:np_formatter="@string/number_picker_formatter"
             app:np_height="64dp"
             app:np_max="20"
@@ -65,7 +65,7 @@
             app:np_orientation="horizontal"
             app:np_selectedTextColor="@color/background_footer_item_grid_categorias"
             app:np_selectedTextSize="18dp"
-            app:np_textColor="@color/primaryColor"
+            app:np_textColor="@color/md_white_1000"
             app:np_textSize="15dp"
             app:np_typeface="sans-serif-light"
             app:np_value="1"
@@ -78,10 +78,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:background="#000"
-        android:foreground="?attr/selectableItemBackground"
+        android:background="@drawable/buttonstyle"
         android:text="Añadir Producto"
         android:textColor="#fff"
-        android:id="@+id/btnPasar"/>
+        android:id="@+id/btnPasar"
+        android:clickable="true"
+        android:drawableStart="@drawable/ic_cart"
+        android:foreground="?selectableItemBackgroundBorderless"/>
 
 </LinearLayout>

@@ -72,6 +72,15 @@
                     android:textSize="12sp"
                     android:textStyle="italic" />
 
+                <TextView
+                    android:id="@+id/precio_unit_carrito"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:text="Precio"
+                    android:textSize="12sp"
+                    android:textStyle="italic" />
+
             </LinearLayout>
 
             <LinearLayout
@@ -94,7 +103,7 @@
                     android:layout_height="25dp"
                     android:layout_margin="7dp"
                     android:contentDescription="Delete"
-                    android:background="?selectableItemBackground"
+                    android:background="?selectableItemBackgroundBorderless"
                     android:clickable="true"
                     android:src="@drawable/delete" />
             </LinearLayout>

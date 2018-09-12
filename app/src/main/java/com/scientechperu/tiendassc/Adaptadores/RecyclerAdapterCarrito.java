@@ -40,6 +40,8 @@ import com.scientechperu.tiendassc.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 /**
  * {@link BaseAdapter} personalizado para el gridview
  */
@@ -127,6 +129,7 @@ public class RecyclerAdapterCarrito extends RecyclerView.Adapter<RecyclerView.Vi
 
         ((RecyclerViewHolderCarrito) holder).nombre_producto_car.setText(item.getNombre_producto());
         ((RecyclerViewHolderCarrito) holder).cantidad_producto_car.setText("Cant: "+item.getCantidad());
+        ((RecyclerViewHolderCarrito) holder).precio_unit_car.setText("P.U.: S/"+item.getPrecio_producto());
         ((RecyclerViewHolderCarrito) holder).precio_producto_car.setText("S/"+item.getImporte());
 
         ((RecyclerViewHolderCarrito) holder).row_delete.setOnClickListener(new View.OnClickListener() {
@@ -176,6 +179,11 @@ public class RecyclerAdapterCarrito extends RecyclerView.Adapter<RecyclerView.Vi
                                         ft.detach(fm);
                                         ft.attach(fm);
                                         ft.commit();
+
+                                        new SweetAlertDialog(holder.itemView.getContext(), SweetAlertDialog.SUCCESS_TYPE)
+                                                .setTitleText("Eliminado!")
+                                                .setConfirmText("OK")
+                                                .show();
 
                                     }
                                 })
