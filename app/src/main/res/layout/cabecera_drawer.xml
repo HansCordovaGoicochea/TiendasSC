@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/primaryColor"
+    android:layout_height="200dp"
+    android:background="@drawable/logoheader"
     android:gravity="bottom"
     android:orientation="vertical"
     android:padding="@dimen/padding_izquierdo_cabecera"
@@ -12,9 +12,9 @@
     <ImageView
         android:id="@+id/imageView3"
         android:layout_width="@dimen/ancho_logo"
-        android:layout_height="140dp"
-        android:layout_gravity="center"
-        android:src="@drawable/logo" />
+        android:layout_height="120dp"
+        android:layout_gravity="start"
+        android:src="@drawable/logomobil" />
 
     <TableLayout
         android:layout_width="match_parent"
@@ -24,43 +24,34 @@
         android:orientation="vertical"
         android:rowCount="2">
 
+        <!-- Nombre de Usuario -->
+        <TextView
+            android:id="@+id/username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Juana Maria Perez"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textColor="@color/md_indigo_900"
+            android:textStyle="bold" />
 
-        <!--<TableRow-->
+        <!-- Correo de la cuenta -->
+        <TextView
+            android:id="@+id/email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="juanaperez01@gmail.com"
+            android:textColor="@color/md_indigo_900"
+            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+        <!--&lt;!&ndash; Correo de la cuenta &ndash;&gt;-->
+        <!--<TextView-->
+            <!--android:id="@+id/email"-->
+            <!--style="@style/Widget.AppCompat.Spinner"-->
             <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent">-->
-
-            <!--<ImageView-->
-                <!--android:id="@+id/icono_carrito"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginRight="8dp"-->
-                <!--android:src="@drawable/carrito_compras" />-->
-
-            <!--<TextView-->
-                <!--android:id="@+id/etiqueta_carrito"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_gravity="center_vertical"-->
-                <!--android:text="@string/etiqueta_carrito"-->
-                <!--android:textAppearance="@style/TextAppearance.AppCompat.Body1"-->
-                <!--android:textStyle="bold" />-->
-
-        <!--</TableRow>-->
-
-        <!--<TableRow-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent">-->
-
-            <!--<TextView-->
-                <!--android:id="@+id/texto_total_carrito"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_column="1"-->
-                <!--android:layout_gravity="center_vertical"-->
-                <!--android:text="$ 0"-->
-                <!--android:textAppearance="@style/TextAppearance.AppCompat.Body1"-->
-                <!--android:textStyle="bold" />-->
-        <!--</TableRow>-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="juanaperez01@gmail.com"-->
+            <!--android:textAppearance="@style/TextAppearance.AppCompat.Body1" />-->
 
     </TableLayout>
 </LinearLayout>

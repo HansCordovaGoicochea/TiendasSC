@@ -12,11 +12,12 @@ public class Carro extends SugarRecord {
     private Integer id_image;
     private Double importe;
     private Integer id_shop;
+    private Integer id_caja;
 
     public Carro() {
     }
 
-    public Carro(String id_cart, String nombre_producto, Double precio_producto, String id_producto, Integer cantidad, Integer id_image, Double importe,Integer id_shop) {
+    public Carro(String id_cart, String nombre_producto, Double precio_producto, String id_producto, Integer cantidad, Integer id_image, Double importe, Integer id_shop, Integer id_caja) {
         this.id_cart = id_cart;
         this.nombre_producto = nombre_producto;
         this.precio_producto = precio_producto;
@@ -25,8 +26,8 @@ public class Carro extends SugarRecord {
         this.id_image = id_image;
         this.importe = importe;
         this.id_shop = id_shop;
+        this.id_caja = id_caja;
     }
-
 
     public String getId_cart() {
         return id_cart;
@@ -68,7 +69,6 @@ public class Carro extends SugarRecord {
         this.cantidad = cantidad;
     }
 
-
     public Integer getId_image() {
         return id_image;
     }
@@ -91,5 +91,13 @@ public class Carro extends SugarRecord {
 
     public void setId_shop(Integer id_shop) {
         this.id_shop = id_shop;
+    }
+
+    public Integer getId_caja() {
+        return id_caja;
+    }
+
+    public void setId_caja(Integer id_caja) {
+        this.id_caja = id_caja;
     }
 }

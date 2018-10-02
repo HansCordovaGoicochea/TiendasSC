@@ -141,18 +141,47 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnPasar"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        android:layout_marginTop="10dp"
-        android:foreground="?attr/selectableItemBackground"
-        android:text="REALIZAR PEDIDO"
-        android:layout_margin="22dp"
-        android:background="@color/accentColor"
-        android:textColor="#fff"
-        android:textSize="18sp"
-        android:clickable="true"/>
+        android:layout_gravity="center_vertical"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <Button
+            android:id="@+id/btnProductos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="10dp"
+            android:padding="5dp"
+            android:background="@color/accentColor"
+            android:clickable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:text="Pedir"
+            android:textColor="#fff"
+            android:drawableEnd="@drawable/mas"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnPasar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="10dp"
+            android:foreground="?attr/selectableItemBackground"
+            android:text="REALIZAR PEDIDO"
+            android:layout_margin="10dp"
+            android:padding="10dp"
+            android:background="@color/accentColor"
+            android:drawableStart="@drawable/cesta"
+            android:textColor="#fff"
+            android:textSize="17sp"
+            android:clickable="true"/>
+
+    </LinearLayout>
+
+
 
 </LinearLayout>

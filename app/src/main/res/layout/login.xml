@@ -1,32 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:fitsSystemWindows="true"
-    android:background="@drawable/login_dialog_background"
-    >
+    android:background="@drawable/login_dialog_background">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="15dp"
+        android:paddingTop="1dp"
         android:paddingLeft="24dp"
         android:paddingRight="24dp">
 
-        <ImageView android:src="@drawable/logo"
+        <ImageView android:src="@drawable/logomobil"
             android:layout_width="wrap_content"
-            android:layout_height="72dp"
-            android:layout_marginBottom="10dp"
+            android:layout_height="80dp"
+            android:layout_marginBottom="5dp"
             android:layout_gravity="center_horizontal" />
 
         <!--  Name Label -->
         <android.support.design.widget.TextInputLayout
+            app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp">
+            android:layout_marginBottom="3dp"
+            android:layout_marginTop="3dp">
+
+            <EditText
+                android:id="@+id/input_dni"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/baseline_credit_card_black_48dp"
+                android:hint=" Nro Documento de identidad"
+                android:inputType="number"
+                android:maxLength="15"/>
+        </android.support.design.widget.TextInputLayout>
+
+        <!--  Name Label -->
+        <android.support.design.widget.TextInputLayout
+            app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="3dp"
+            android:layout_marginTop="3dp">
+
+            <EditText
+                android:id="@+id/input_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/baseline_email_black_18dp"
+                android:hint=" Email"
+                android:inputType="textEmailAddress" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp">
             <EditText android:id="@+id/input_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -37,10 +71,11 @@
 
         <!--  Name Label -->
         <android.support.design.widget.TextInputLayout
+            app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp">
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp">
             <EditText android:id="@+id/input_apellidos"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -50,25 +85,14 @@
         </android.support.design.widget.TextInputLayout>
 
         <!-- Email Label -->
-        <android.support.design.widget.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp">
-            <EditText android:id="@+id/input_email"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textEmailAddress"
-                android:drawableLeft="@drawable/baseline_email_black_18dp"
-                android:hint=" Email" />
-        </android.support.design.widget.TextInputLayout>
 
         <!-- Email Label -->
         <android.support.design.widget.TextInputLayout
+            app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp">
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp">
             <EditText android:id="@+id/input_telefono"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -80,10 +104,11 @@
 
         <!-- Direccion Label -->
         <android.support.design.widget.TextInputLayout
+            app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp">
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp">
             <EditText android:id="@+id/input_direccion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -97,7 +122,7 @@
             android:id="@+id/btn_signup"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="22dp"
+            android:layout_margin="10dp"
             android:background="@color/accentColor"
             android:textColor="#fff"
             android:textSize="18sp"

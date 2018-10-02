@@ -64,7 +64,14 @@ public class PlaceholderFragment extends Fragment {
         super.onPrepareOptionsMenu(menu);
 // You can hide the state of the menu item here if you call getActivity().supportInvalidateOptionsMenu(); somewhere in your code
         MenuItem menuItem = menu.findItem(R.id.action_shop);
+        MenuItem buscar = menu.findItem(R.id.action_buscar);
+//        MenuItem ordenes = menu.findItem(R.id.pedidos);
         menuItem.setVisible(false);
+        buscar.setVisible(false);
+//        ordenes.setVisible(false);
+
+        MenuItem pedido = menu.findItem(1);
+        pedido.setVisible(false);
     }
 
 

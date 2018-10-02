@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:orientation="vertical"
+    android:id="@+id/fragment_caruscel">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_weight="1">
+                <com.yarolegovich.discretescrollview.DiscreteScrollView
+                    android:id="@+id/item_picker"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                </com.yarolegovich.discretescrollview.DiscreteScrollView>
+
+                <TextView
+                    android:id="@+id/item_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:fontFamily="sans-serif-light"
+                    android:gravity="center"
+                    android:singleLine="true"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="Pruebaaaa" />
+
+                <TextView
+                    android:id="@+id/item_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:textColor="@color/color_light"
+                    android:textStyle="bold"
+                    tools:text="dirección" />
+        </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/imagen_QR"
+                        android:layout_width="250dp"
+                        android:layout_height="240dp"
+                        android:layout_marginTop="5dp"
+                        android:padding="1dp"
+                        android:layout_gravity="center_horizontal|center_vertical"
+                        android:src="@drawable/qrcode"/>
+
+                    <TextView
+                        android:id="@+id/txt_cliente"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:padding="2dp"
+                        android:textStyle="bold"
+                        android:text="Pere - 12314750"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                        android:shadowColor="@color/md_black_1000"
+                        android:textColor="@color/md_blue_400" />
+                    <!--<TextView-->
+                        <!--android:id="@+id/txt_cliente"-->
+                        <!--android:layout_width="wrap_content"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:layout_gravity="top|center"-->
+                        <!--android:textColor="@color/md_blue_400"-->
+                        <!--android:textStyle="bold"-->
+                        <!--tools:text="Pere - 12314750"/>-->
+                </FrameLayout>
+
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@color/md_blue_400"
+                    android:gravity="center"
+                    android:padding="2dp"
+                    android:textStyle="bold"
+                    android:textAllCaps="true"
+                    android:text="Cupones Por Tienda"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:shadowColor="@color/md_black_1000"
+                    android:textColor="@color/md_white_1000" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/recyclerView_cupones"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                    </android.support.v7.widget.RecyclerView>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

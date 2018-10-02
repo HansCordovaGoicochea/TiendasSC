@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Location;
@@ -34,6 +35,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -53,6 +55,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -71,6 +74,7 @@ import com.scientechperu.tiendassc.R;
 import com.scientechperu.tiendassc.SingletonVolley.MySingleton;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -85,6 +89,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -123,8 +128,8 @@ public class FragmentCarrito extends Fragment {
 
     //        viene_de = 1 es App-delivery 2 es App-mesa
 //        es_delivery = 1 si 0 no
-    String nro_mesa = "0", viene_de = "", es_delivery = "", direccion_delivery = "";
-    boolean esta_en_local;
+    String nro_mesa = "0", viene_de = "", es_delivery = "", direccion_delivery = "", codigo_unico_app = "";
+    boolean esta_en_local = false;
 
     AlertDialog alertDialog;
 
@@ -155,6 +160,20 @@ public class FragmentCarrito extends Fragment {
 
     String _ID_cart = "0";
 
+    String latitud_cliente = "";
+    String longitud_cliente = "";
+
+    Usuario usuario;
+
+    Button realizar_pedido;
+    Button ir_productos;
+    double totalSum = 0.0;
+    double subtotalSum = 0.0;
+    double igvSum = 0.0;
+
+    Integer idtienda_current;
+    Integer idcaja_current;
+
     public FragmentCarrito() {
         // Required empty public constructor
     }
@@ -166,10 +185,18 @@ public class FragmentCarrito extends Fragment {
 
         // To load the data at a later time
         prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
-        Integer idtienda_current = prefs.getInt("id_shop", 0);
+        idtienda_current = prefs.getInt("id_shop", 0);
+        idcaja_current = prefs.getInt("id_caja", 0);
+
+
+        String[] argwheretienda = {
+                String.valueOf(idtienda_current),
+                String.valueOf(idcaja_current),
+        };
+
 
 //        Tienda tienda = Tienda.findById(Tienda.class, idtienda_current);
-        List<Tienda> tiendas = Tienda.find(Tienda.class, "idshop = ?", ""+idtienda_current);
+        List<Tienda> tiendas = Tienda.find(Tienda.class, "idshop = ? and idcaja = ?", argwheretienda);
         tienda = tiendas.get(0);
 
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
@@ -177,8 +204,7 @@ public class FragmentCarrito extends Fragment {
     }
 
     private boolean isLocationEnabled() {
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
     @Override
@@ -190,19 +216,18 @@ public class FragmentCarrito extends Fragment {
 
         textCartItemCount = actionView.findViewById(R.id.cart_badge); // el texto de numero de productos
 
-        // To load the data at a later time
-        prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
-        Integer idtienda_current = prefs.getInt("id_shop", 0);
-
         String[] vals = {
-                String.valueOf(idtienda_current)
+                String.valueOf(idtienda_current),
+                String.valueOf(idcaja_current)
         };
-        mCartItemCount = (int) Carro.count(Carro.class, "idshop = ?", vals);
+        mCartItemCount = (int) Carro.count(Carro.class, "idshop = ? and idcaja = ?", vals);
         if (mCartItemCount < 0){
             mCartItemCount = 0;
         }
 
         setupBadge(mCartItemCount);
+
+
     }
 
 
@@ -210,10 +235,34 @@ public class FragmentCarrito extends Fragment {
     public void onResume() {
         super.onResume();
         getActivity().setTitle(ARG_SECTION_TITLE);
+        if (totalSum > 0)
+            realizar_pedido.setEnabled(true);
+        Log.e(TAG, "resumen PANTALLA");
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+//      Log.e(TAG, "EMPEZANDO PANTALLA");
+
+        String[] vals = {
+                String.valueOf(idtienda_current),
+                String.valueOf(idcaja_current)
+        };
+
+//      HACER VERIFICACION SI LA ORDEN YA ESTA PAGADA CON EL CODIGO UNICO PARA PODER BORRAR
+        List<Carroprincipal> carroprincipals = Carroprincipal.find(Carroprincipal.class, "idshop = ? and idcaja = ?", vals);
+        if (carroprincipals.size() > 0 && Integer.valueOf(carroprincipals.get(0).getNro_mesa()) > 0) {
+            Carroprincipal carroprincipal = carroprincipals.get(0);
+//            Log.e(TAG, "empieza el start "+carroprincipal.getCodigounico());
+            jsonOrder(UrlRaiz.domain + "/" + tienda.getVirtual_uri() + "api/orders/" + UrlRaiz.ws_key + "&output_format=JSON&filter[codigo_unico_app]="+carroprincipal.getCodigounico()+"&display=full", true);
+        }
+
 
     }
 
     private void showAlert() {
+
         final AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
         dialog.setTitle("Activar Localización")
                 .setMessage("Su ubicación esta desactivada.\npor favor active su ubicación " +
@@ -255,6 +304,17 @@ public class FragmentCarrito extends Fragment {
         return fragment;
     }
 
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+
+// You can hide the state of the menu item here if you call getActivity().supportInvalidateOptionsMenu(); somewhere in your code
+        MenuItem buscar = menu.findItem(R.id.action_buscar);
+        buscar.setVisible(false);
+
+        MenuItem pedido = menu.findItem(1);
+        pedido.setVisible(true);
+    }
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -263,14 +323,12 @@ public class FragmentCarrito extends Fragment {
 
         View view = inflater.inflate(R.layout.activity_activividad_carrito, container, false);
 
-        // To load the data at a later time
-        prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
-        Integer idtienda_current = prefs.getInt("id_shop", 0);
 
-        String[] vals = {
-                String.valueOf(idtienda_current)
+        final String[] vals = {
+                String.valueOf(idtienda_current),
+                String.valueOf(idcaja_current)
         };
-        CarroList = Carro.find(Carro.class, "idshop = ?", vals);
+        CarroList = Carro.find(Carro.class, "idshop = ? and idcaja = ?", vals);
 
 
 //
@@ -302,11 +360,10 @@ public class FragmentCarrito extends Fragment {
         igv = view.findViewById(R.id.txtIgv);
 
 
-        final Button realizar_pedido = view.findViewById(R.id.btnPasar);
+        realizar_pedido = view.findViewById(R.id.btnPasar);
 
-        double totalSum = 0.0;
-        double subtotalSum = 0.0;
-        double igvSum = 0.0;
+        ir_productos = view.findViewById(R.id.btnProductos);
+
         Integer cantidadP = 0;
 
         for (int i = 0; i < CarroList.size(); i++) {
@@ -323,10 +380,23 @@ public class FragmentCarrito extends Fragment {
 
         cantidad_productos.setText("(" + cantidadP + ") Productos en el detalle para pedir");
 //        cantidad_productos.setText((int) Carro.count(Carro.class, "idshop = ?", vals)+" Productos para pedir");
-
-        total.setText("S/"+ roundTwoDecimals(totalSum));
-        subtotal.setText("S/"+roundTwoDecimals(subtotalSum));
-        igv.setText("S/"+roundTwoDecimals(igvSum));
+//        Log.e(TAG, "S/"+roundTwoDecimals(totalSum));
+//        Log.e(TAG, "S/"+roundTwoDecimals(subtotalSum));
+//        Log.e(TAG, "S/"+roundTwoDecimals(igvSum));
+//        Log.e(TAG, "--------------");
+//        Log.e(TAG, "S/"+totalSum);
+//        Log.e(TAG, "S/"+subtotalSum);
+//        Log.e(TAG, "S/"+igvSum);
+        double roundOff = Math.round(totalSum * 100.0) / 100.0;
+        double roundOff2 = Math.round(subtotalSum * 100.0) / 100.0;
+        double roundOff3 = Math.round(igvSum * 100.0) / 100.0;
+//
+//        total.setText("S/"+ roundTwoDecimals(totalSum));
+//        subtotal.setText("S/"+roundTwoDecimals(subtotalSum));
+//        igv.setText("S/"+roundTwoDecimals(igvSum));
+        total.setText("S/"+ roundOff);
+        subtotal.setText("S/"+roundOff2);
+        igv.setText("S/"+roundOff3);
 
 
         realizar_pedido.setOnClickListener(new View.OnClickListener()
@@ -334,12 +404,27 @@ public class FragmentCarrito extends Fragment {
             @Override
             public void onClick(View v)
             {
+                final boolean es_celular = isTelephone(getActivity());
+                Log.e(TAG, es_celular+"");
 
+                realizar_pedido.setEnabled(false); //deshabilitar el boton
                 if(isOnline(getContext())){
-                    if (!checkLocation())
+                    Log.e(TAG, "--------------");
+                    if (!checkLocation()){
+                        realizar_pedido.setEnabled(true); //habilitar el boton
                         return;
+                    }
+
+                    final String[] filtro_idshop = {
+                            String.valueOf(tienda.getId_shop()),
+                            String.valueOf(tienda.getId_caja())
+                    };
+
 
                     locationManager.removeUpdates(locationListenerGPS);
+//                    if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//
+//                    }
                     if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
                     }
@@ -350,6 +435,8 @@ public class FragmentCarrito extends Fragment {
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
+                            location.getLatitude();
+                            location.getLongitude();
 //                            Log.e(TAG, "Latitude:" + location.getLatitude() + ", Longitude:" + location.getLongitude());
                         }
 
@@ -379,6 +466,28 @@ public class FragmentCarrito extends Fragment {
                                         Log.e(TAG, location.getLatitude() + "");
                                         Log.e(TAG, location.getLongitude() + "");
 
+                                        latitud_cliente = location.getLatitude() + "";
+                                        longitud_cliente = location.getLongitude() + "";
+
+                                        String[] vals = {
+                                                String.valueOf(idtienda_current),
+                                                String.valueOf(idcaja_current)
+                                        };
+
+                                        List<Carroprincipal> carroprincipals = Carroprincipal.find(Carroprincipal.class, "idshop = ? and idcaja = ?", vals);
+                                        if (carroprincipals.size() > 0 && Integer.valueOf(carroprincipals.get(0).getNro_mesa()) > 0) {
+                                            Carroprincipal carroprincipal = carroprincipals.get(0);
+                                            codigo_unico_app = carroprincipal.getCodigounico();
+                                            nro_mesa = carroprincipal.getNro_mesa();
+                                            esta_en_local = true;
+
+//                                            //verificar la mesa para poder registrar
+//                                            jsonOrder(UrlRaiz.domain + "/" + tienda.getVirtual_uri() + "api/orders/" + UrlRaiz.ws_key + "&output_format=JSON&filter[codigo_unico_app]="+carroprincipal.getCodigounico()+"&display=full");
+                                            xmlSendCart();
+
+                                        }else{
+                                            codigo_unico_app = UUID.randomUUID().toString();
+
                                         //ubicacion del centro del punto
                                         exact_location = new LatLng(Double.parseDouble(tienda.getLatitud()), Double.parseDouble(tienda.getLongitud()));
 //                                        exact_location = new LatLng(-7.182138, -78.501823);
@@ -399,11 +508,11 @@ public class FragmentCarrito extends Fragment {
                                         Log.e("disresultado", Arrays.toString(disResultado));
 
                                         //verificar si estamos dentro o fuera del radio de ubicacion
-                                        if((double)disResultado[0] > (double)5){
+                                        if((double)disResultado[0] > (double)15){
 //                                           Log Fuera
                                             Log.e(TAG, "Fuera");
                                             //
-                                            realizar_pedido.setEnabled(false); //deshabilitar el boton
+
                                             final SweetAlertDialog confirmarPedido = new SweetAlertDialog(getContext(), SweetAlertDialog.NORMAL_TYPE);
                                             confirmarPedido.setCancelable(true);
                                             confirmarPedido.setCanceledOnTouchOutside(false);
@@ -412,6 +521,7 @@ public class FragmentCarrito extends Fragment {
                                             confirmarPedido.setCancelButton("No", new SweetAlertDialog.OnSweetClickListener() {
                                                 @Override
                                                 public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                                    realizar_pedido.setEnabled(true); //habilitar el boton
                                                     confirmarPedido.dismissWithAnimation();
                                                 }
                                             });
@@ -419,7 +529,11 @@ public class FragmentCarrito extends Fragment {
                                             confirmarPedido.setConfirmButton("Si!", new SweetAlertDialog.OnSweetClickListener() {
                                                 @Override
                                                 public void onClick(SweetAlertDialog sweetAlertDialog) {
-                                                    ShowPopupWindow(); // mostrar las pciones de llamada
+                                                    if (es_celular) {
+                                                        ShowPopupWindow();// mostrar las pciones de llamada
+                                                    }else{
+                                                        Toast.makeText(getContext(), "No puedes realizar llamadas", Toast.LENGTH_SHORT).show();
+                                                    }
                                                     confirmarPedido.dismissWithAnimation();
                                                 }
                                             });
@@ -438,7 +552,12 @@ public class FragmentCarrito extends Fragment {
                                             dialogConfirmarShop.setCancelButton("No", new SweetAlertDialog.OnSweetClickListener() {
                                                 @Override
                                                 public void onClick(SweetAlertDialog sweetAlertDialog) {
-                                                    ShowPopupWindow();
+                                                    realizar_pedido.setEnabled(true); //habilitar el boton
+                                                    if (es_celular) {
+                                                        ShowPopupWindow();// mostrar las pciones de llamada
+                                                    }else{
+                                                        Toast.makeText(getContext(), "No puedes realizar llamadas", Toast.LENGTH_SHORT).show();
+                                                    }
                                                     dialogConfirmarShop.dismissWithAnimation();
                                                 }
                                             });
@@ -446,9 +565,6 @@ public class FragmentCarrito extends Fragment {
                                             dialogConfirmarShop.setConfirmButton("Si!", new SweetAlertDialog.OnSweetClickListener() {
                                                 @Override
                                                 public void onClick(SweetAlertDialog sweetAlertDialog) {
-                                                    //enviar la orden a la web
-
-                                                    //
 
                                                     final EditText numero_mesa = new EditText(getContext());
 
@@ -477,6 +593,7 @@ public class FragmentCarrito extends Fragment {
                                                     dialog.setCancelButton("Cancelar", new SweetAlertDialog.OnSweetClickListener() {
                                                         @Override
                                                         public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                                            realizar_pedido.setEnabled(true); //habilitar el boton
                                                             dialog.dismissWithAnimation();
                                                         }
                                                     });
@@ -492,7 +609,17 @@ public class FragmentCarrito extends Fragment {
 //                                                                true si esta en el local
                                                                 nro_mesa = _numero_mesa;
                                                                 esta_en_local = true;
-                                                                xmlSendCart(); // descomentar para enviar a la web los datos del carrito
+
+
+                                                                if((int)Carroprincipal.count(Carroprincipal.class, "idshop = ? and idcaja = ?", filtro_idshop) > 0){
+                                                                    //verificar si hay orden y verificar la mesa
+                                                                    List<Carroprincipal> carroprincipal = Carroprincipal.find(Carroprincipal.class, "idshop = ? and idcaja = ?", filtro_idshop);
+                                                                    jsonOrder(UrlRaiz.domain + "/" + tienda.getVirtual_uri() + "api/orders/" + UrlRaiz.ws_key + "&output_format=JSON&filter[codigo_unico_app]="+carroprincipal.get(0).getCodigounico()+"&display=full", false);
+                                                                }
+                                                                else{
+                                                                    xmlSendCart(); // descomentar para enviar a la web los datos del carrito
+                                                                }
+
 
                                                                 dialog.dismissWithAnimation();
                                                             }
@@ -507,29 +634,55 @@ public class FragmentCarrito extends Fragment {
                                             dialogConfirmarShop.show();
                                         }
                                     }
+                                    }//fin del else que comprueba la mesa
                                 }
                             });
 
 
                 }else{
+                    realizar_pedido.setEnabled(true); //deshabilitar el boton
                     Toast.makeText(getActivity(),"No hay conexión a internet",Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
+
+        ir_productos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getFragmentManager().popBackStackImmediate();
+            }
+        });
+
+
         return view;
+    }
+
+    private boolean estaInstaladaAplicacion(String nombrePaquete, Context context) {
+
+        PackageManager pm = context.getPackageManager();
+        try {
+            pm.getPackageInfo(nombrePaquete, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
+    public static boolean isTelephone(Activity activity){
+        //pseudocode, don't have the copy and paste here right know and can't remember every line
+        Intent i = new Intent(Intent.ACTION_DIAL);
+        return i.resolveActivity(activity.getPackageManager()) != null;
     }
 
 
     public void xmlSendCart(){
-        // To load the data at a later time
-        prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
-        final Integer idtienda_current = prefs.getInt("id_shop", 0);
 
         String[] vals = {
-                String.valueOf(idtienda_current)
+                String.valueOf(idtienda_current),
+                String.valueOf(idcaja_current)
         };
-        CarroList = Carro.find(Carro.class, "idshop = ?", vals);
+        CarroList = Carro.find(Carro.class, "idshop = ? and idcaja = ?", vals);
 
 
         String url = UrlRaiz.domain+"/"+tienda.getVirtual_uri()+"api/carts/"+UrlRaiz.ws_key+"&schema=blank";
@@ -567,17 +720,44 @@ public class FragmentCarrito extends Fragment {
                     Carroprincipal carroprincipal = new Carroprincipal();
                     carroprincipal.setId_cart(_ID_cart);
                     carroprincipal.setId_shop(idtienda_current);
+                    carroprincipal.setCodigounico(codigo_unico_app);
+                    carroprincipal.setId_cliente(Integer.valueOf(usuario.getIdcustomer()));
+                    carroprincipal.setNro_mesa(nro_mesa);
+                    carroprincipal.setId_caja(tienda.getId_caja());
                     carroprincipal.save();
+
+
+                    //borrar el carrito con los productos de la tienda especifica
+                    if (CarroList.size() > 0) {
+                        for (int i = 0; i < CarroList.size(); i++) {
+                            Carro carro = CarroList.get(i);
+                            carro.delete();
+                        }
+                    }
+
+                    if (!esta_en_local){
+                        List<Carroprincipal> carroprincipal2 = Carroprincipal.find(Carroprincipal.class, "codigounico = ?", codigo_unico_app);
+
+                        if (carroprincipal2.size() > 0) {
+                            for (int i = 0; i < carroprincipal2.size(); i++) {
+                                Carroprincipal carroprincipal1 = carroprincipal2.get(i);
+                                carroprincipal1.delete();
+                            }
+                        }
+
+                    }
+
+                    new SweetAlertDialog(getContext(), SweetAlertDialog.SUCCESS_TYPE)
+                            .setTitleText("Exito!")
+                            .setContentText("Tu pedido fue realizado :)")
+                            .show();
+
+
+
+                    getFragmentManager().popBackStackImmediate();
+                    pDialog.dismiss();
+//                    alertDialog.dismiss();
                 }
-
-                new SweetAlertDialog(getContext(), SweetAlertDialog.SUCCESS_TYPE)
-                        .setTitleText("Exito!")
-                        .setContentText("Tu pedido fue realizado :)")
-                        .setConfirmText("OK")
-                        .show();
-
-                Toast.makeText(getContext(), "Pedido realizado", Toast.LENGTH_SHORT).show();
-                pDialog.hide();
 
             }
         }, new Response.ErrorListener() {
@@ -588,9 +768,10 @@ public class FragmentCarrito extends Fragment {
                 new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE)
                         .setTitleText("Error!")
                         .setContentText("Tu pedido NO fue realizado")
+                        .hideConfirmButton()
                         .setCancelText("OK")
                         .show();
-                pDialog.hide();
+                pDialog.dismiss();
             }
         }){
 
@@ -630,17 +811,29 @@ public class FragmentCarrito extends Fragment {
     double roundTwoDecimals(double d)
     {
         DecimalFormat twoDForm = new DecimalFormat("#.##");
-        return Double.valueOf(twoDForm.format(d));
+        return Double.parseDouble(twoDForm.format(d));
     }
 
     public String generaXMLCarro() {
+
+        String[] argwheretienda = {
+                String.valueOf(idtienda_current),
+                String.valueOf(idcaja_current),
+        };
+
+//        Tienda tienda = Tienda.findById(Tienda.class, idtienda_current);
+        List<Tienda> tiendas = Tienda.find(Tienda.class, "idshop = ? and idcaja = ?", argwheretienda);
+        tienda = tiendas.get(0);
+
         String[] vals = {
                 String.valueOf(tienda.getId_shop())
         };
+
+
         List<Usuario> usuarios = Usuario.find(Usuario.class, "idshop = ?", vals);
         String direccion = "";
         if (usuarios.size() > 0){
-            Usuario usuario = usuarios.get(0);
+            usuario = usuarios.get(0);
             id_customer = usuario.getIdcustomer();
             direccion = usuario.getDireccion();
         }
@@ -654,8 +847,8 @@ public class FragmentCarrito extends Fragment {
             viene_de = "1"; //1 es App-delivery
             es_delivery = "1";
             direccion_delivery = direccion;
-
         }
+
 //Log.e(TAG, ""+CarroList.size());
         String format= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<prestashop xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n" +
@@ -686,6 +879,9 @@ public class FragmentCarrito extends Fragment {
                 "<viene_de>"+viene_de+"</viene_de>\n" +
                 "<es_delivery>"+es_delivery+"</es_delivery>\n" +
                 "<direccion_delivery>"+direccion_delivery+"</direccion_delivery>\n" +
+                "<codigo_unico_app>"+codigo_unico_app+"</codigo_unico_app>\n" +
+                "<latitud_cliente>"+latitud_cliente+"</latitud_cliente>\n" +
+                "<longitud_cliente>"+longitud_cliente+"</longitud_cliente>\n" +
                 ////////////////////////////
                 "<associations>\n"+
                 "<cart_rows>\n";
@@ -794,7 +990,8 @@ format += l + "</cart_rows>\n"+
     private void ShowPopupWindow(){
         try {
 
-            ImageView btncall, btnsound, btncamera, btnvideo,btngallary,btnwrite;
+            ImageView btncall, btnsound;
+            TextView txtclose;
 
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
             alertDialogBuilder.setCancelable(false);
@@ -807,6 +1004,17 @@ format += l + "</cart_rows>\n"+
 
             btncall = dialog_call.findViewById(R.id.btncall);
             btnsound = dialog_call.findViewById(R.id.btnsound);
+            txtclose = dialog_call.findViewById(R.id.txtclose);
+
+            txtclose.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    alertDialog.dismiss();
+                    realizar_pedido.setEnabled(true);
+                }
+            });
+
+
             btncall.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -822,12 +1030,16 @@ format += l + "</cart_rows>\n"+
                 @Override
                 public void onClick(View v) {
                     Log.e(TAG, " sound  touch");
-
-                    callWhatsApp("928550245","Tienda pruebaaaa", (Activity) getContext());
-
-//                    callWhatsApp(tienda.getCelular_whatsapp(),tienda.getNombre(), getActivity());
+                    if(estaInstaladaAplicacion("com.whatsapp", getContext())){
+//esta instalada.
+//                        callWhatsApp("928550245","Tienda pruebaaaa", (Activity) getContext());
+                        callWhatsApp(tienda.getCelular_whatsapp(),tienda.getNombre(), getActivity());
 //                    alertDialog.dismiss();
 
+                    }else{
+//no esta instalada.
+                        Toast.makeText(getContext(), "No tienes WhatsApp instalado", Toast.LENGTH_SHORT).show();
+                    }
                 }
 
             });
@@ -852,7 +1064,7 @@ format += l + "</cart_rows>\n"+
         // check for exist phone number
         if (!TextUtils.isEmpty(contactId)) {
             ContentResolver resolver = activity.getContentResolver();
-            Log.e(TAG, "contactId_newcontactId_new contactId ->   "+ contactId);
+//            Log.e(TAG, "contactId_newcontactId_new contactId ->   "+ contactId);
             cursor = resolver.query(
                     ContactsContract.Data.CONTENT_URI,
                     new String[]{ContactsContract.Data._ID},
@@ -860,7 +1072,7 @@ format += l + "</cart_rows>\n"+
                     new String[]{"vnd.android.cursor.item/vnd.com.whatsapp.voip.call", contactId}, null);
 
 
-            Log.e(TAG, "cursor.getCount() ->   "+ cursor.getCount());
+//            Log.e(TAG, "cursor.getCount() ->   "+ cursor.getCount());
 
             if (cursor != null) {
                 // here in the first time equals false and not will work, need fix
@@ -869,7 +1081,7 @@ format += l + "</cart_rows>\n"+
                     String id = cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.Data._ID));
                     if (!TextUtils.isEmpty(id)) {
                         uri = Uri.parse(ContactsContract.Data.CONTENT_URI + "/" + id);
-                        Log.e(TAG, "uriuri ->   "+uri);
+//                        Log.e(TAG, "uriuri ->   "+uri);
                         xmlSendCart(); // descomentar para enviar a la web los datos del carrito
                         alertDialog.dismiss();
                         break;
@@ -878,7 +1090,7 @@ format += l + "</cart_rows>\n"+
                 cursor.close();
             }
         } else {
-            Log.e(TAG, "Agregar nuevo contacto");
+//            Log.e(TAG, "Agregar nuevo contacto");
             addToContactsNewNumber(phoneNumber, name, activity);
         }
         return uri;
@@ -931,7 +1143,7 @@ format += l + "</cart_rows>\n"+
             final Cursor cursor = activity.getContentResolver().query(results[0].uri, projection, null, null, null);
             cursor.moveToNext();
             long contactId = cursor.getLong(0);
-            Log.e(TAG, "Contacto agregado ID ->   "+contactId);
+//            Log.e(TAG, "Contacto agregado ID ->   "+contactId);
             cursor.close();
             callWhatsApp(number, name, activity);
 //            Log.e(TAG, "numbernumbernumbernumber ->   "+number);
@@ -1039,5 +1251,106 @@ format += l + "</cart_rows>\n"+
         public void onProviderDisabled(String s) {
         }
     };
+
+
+    //consultar order
+    private void jsonOrder(String url, final boolean vieneStart) {
+                Log.e(TAG, "Llego al json ORDER");
+                Log.e(TAG, url);
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                        try {
+
+//                            Log.e(TAG, response.toString());
+                            JSONArray jsonMainNode = response.getJSONArray("orders");
+
+                            JSONObject jsonChildNode = jsonMainNode.getJSONObject(0);
+
+                            Integer id = jsonChildNode.optInt("id");
+                            String current_state = jsonChildNode.optString("current_state");
+                            String nro_mesa = jsonChildNode.optString("nro_mesa");
+                            String es_deli = jsonChildNode.optString("es_delivery");
+                            String codigo = jsonChildNode.optString("codigo_unico_app");
+//                            Log.e(TAG, es_deli);
+//                            1 si 2 no para delivery
+                            List<Carroprincipal> carroprincipal = Carroprincipal.find(Carroprincipal.class, "codigounico = ?", codigo);
+
+                            if (vieneStart && es_deli.equals("2") && current_state.equals("2") && carroprincipal.size() > 0){
+//                                codigo_unico_app = UUID.randomUUID().toString();
+
+                                for (int i = 0; i < carroprincipal.size(); i++) {
+                                    Carroprincipal carroprincipal1 = carroprincipal.get(i);
+                                    carroprincipal1.delete();
+                                }
+
+                            }else if (vieneStart && es_deli.equals("2") && current_state.equals("3") && carroprincipal.size() > 0){
+                                Log.e(TAG, "Pedido en preparación");
+                            }else{
+
+                                if (es_deli.equals("2")) {
+                                    if (current_state.equals("2")){
+
+                                        codigo_unico_app = UUID.randomUUID().toString();
+
+                                        if (carroprincipal.size() > 0) {
+                                            for (int i = 0; i < carroprincipal.size(); i++) {
+                                                Carroprincipal carroprincipal1 = carroprincipal.get(i);
+                                                carroprincipal1.delete();
+                                            }
+                                        }
+
+                                        xmlSendCart();
+                                    }else{
+//                                    Log.e(TAG, codigo_unico_app);
+                                        if (codigo.equals(codigo_unico_app)){
+                                            xmlSendCart();
+                                        }else{
+                                            new SweetAlertDialog(getContext(), SweetAlertDialog.ERROR_TYPE)
+                                                    .setTitleText("Error!")
+                                                    .setContentText("¡Tu pedido NO fue realizado! \nLa mesa esta ocupada Gracias")
+                                                    .hideConfirmButton()
+                                                    .setCancelText("OK")
+                                                    .show();
+                                            realizar_pedido.setEnabled(true);
+                                        }
+                                    }
+                                }
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+
+//                Toast.makeText(getActivity(),"El servidor ha tardado demasiado tiempo en responder",Toast.LENGTH_SHORT).show();
+                error.printStackTrace();
+            }
+        });
+
+
+          /*Se definen las políticas para la petición realizada. Recibe como argumento una instancia de la clase
+        DefaultRetryPolicy, que recibe como parámetros de entrada el tiempo inicial de espera para la respuesta,
+        el número máximo de intentos, y el multiplicador de retardo de envío por defecto.*/
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                15000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+
+        /*Se declara e inicializa una variable de tipo RequestQueue, encargada de crear
+        una nueva petición en la cola del servicio web.*/
+        MySingleton.getInstance(getActivity()).addToRequestQueue(request);
+    }
+
 
 }

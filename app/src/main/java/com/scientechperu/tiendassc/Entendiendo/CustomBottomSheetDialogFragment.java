@@ -81,6 +81,16 @@ public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View view2) {
 
+                //                    Toast toast= Toast.makeText(getContext(), "¡Tienes "+cant.getValue()+" "+item.getName(), Toast.LENGTH_SHORT);
+
+//                Toast.makeText(getContext(), "num "+badge.getText(), Toast.LENGTH_SHORT).show();
+                //actualizar el icono del carrito
+                // To load the data at a later time
+                SharedPreferences prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
+                Integer idtienda_current = prefs.getInt("id_shop", 0);
+                Integer idcaja_current = prefs.getInt("id_caja", 0);
+
+
                 List<Carro> carros = Carro.find(Carro.class, "idproducto = ?", item.getId_product().toString());
                 if (carros.size() > 0) {
 
@@ -112,6 +122,7 @@ public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
                     carro.setId_image(item.getId_image());
                     carro.setImporte(importe);
                     carro.setId_shop(Integer.valueOf(item.getId_shop_default()));
+                    carro.setId_caja(idcaja_current);
                     carro.save();
 
 //                    Toast.makeText(getContext(), "¡Tienes "+cant.getValue()+" "+item.getName(), Toast.LENGTH_SHORT).show();
@@ -120,19 +131,13 @@ public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
                     toast.show();
                 }
 
-//                    Toast toast= Toast.makeText(getContext(), "¡Tienes "+cant.getValue()+" "+item.getName(), Toast.LENGTH_SHORT);
-
-//                Toast.makeText(getContext(), "num "+badge.getText(), Toast.LENGTH_SHORT).show();
-                //actualizar el icono del carrito
-                // To load the data at a later time
-                SharedPreferences prefs = getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
-                Integer idtienda_current = prefs.getInt("id_shop", 0);
 
 
                 String[] vals = {
-                        String.valueOf(idtienda_current)
+                        String.valueOf(idtienda_current),
+                        String.valueOf(idcaja_current)
                 };
-                int mCartItemCount = (int) Carro.count(Carro.class, "idshop = ?", vals);
+                int mCartItemCount = (int) Carro.count(Carro.class, "idshop = ? and idcaja = ?", vals);
                 if (mCartItemCount < 0){
                     mCartItemCount = 0;
                 }

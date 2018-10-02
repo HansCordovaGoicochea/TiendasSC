@@ -25,6 +25,7 @@ import com.scientechperu.tiendassc.Clases.Productos;
 import com.scientechperu.tiendassc.Clases.UrlRaiz;
 import com.scientechperu.tiendassc.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -168,5 +169,12 @@ public class RecyclerAdapterProductos extends RecyclerView.Adapter<RecyclerView.
      */
     public void enableFooter(boolean isEnabled){
         this.isFooterEnabled = isEnabled;
+    }
+
+
+    public void setFilter(ArrayList<Productos> nuevosProductos){
+        items = new ArrayList<>();
+        items.addAll(nuevosProductos);
+        notifyDataSetChanged();
     }
 }

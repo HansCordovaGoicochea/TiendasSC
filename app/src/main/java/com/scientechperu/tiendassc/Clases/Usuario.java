@@ -5,6 +5,7 @@ import com.orm.SugarRecord;
 public class Usuario extends SugarRecord {
 
     private String idcustomer;
+    private String num_document;
     private String nombre;
     private String apellidos;
     private String email;
@@ -15,8 +16,9 @@ public class Usuario extends SugarRecord {
     public Usuario() {
     }
 
-    public Usuario(String idcustomer, String nombre, String apellidos, String email, String celular, String direccion, String id_shop) {
+    public Usuario(String idcustomer, String num_document, String nombre, String apellidos, String email, String celular, String direccion, String id_shop) {
         this.idcustomer = idcustomer;
+        this.num_document = num_document;
         this.nombre = nombre;
         this.apellidos = apellidos;
         this.email = email;
@@ -25,13 +27,20 @@ public class Usuario extends SugarRecord {
         this.id_shop = id_shop;
     }
 
-
     public String getIdcustomer() {
         return idcustomer;
     }
 
     public void setIdcustomer(String idcustomer) {
         this.idcustomer = idcustomer;
+    }
+
+    public String getNum_document() {
+        return num_document;
+    }
+
+    public void setNum_document(String num_document) {
+        this.num_document = num_document;
     }
 
     public String getNombre() {

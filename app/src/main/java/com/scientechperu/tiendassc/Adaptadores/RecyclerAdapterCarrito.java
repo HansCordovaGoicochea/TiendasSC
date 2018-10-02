@@ -78,6 +78,7 @@ public class RecyclerAdapterCarrito extends RecyclerView.Adapter<RecyclerView.Vi
         final Carro item = items.get(position);
         if (item.getId_image() != 0) {
             // load image from the internet using Glide
+
             String url_imagen = UrlRaiz.domain_api + "images/products/" + item.getId_producto() + "/" + item.getId_image() + "" + UrlRaiz.ws_key;
 
             RequestOptions requestOptions = new RequestOptions()

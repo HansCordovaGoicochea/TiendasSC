@@ -1,10 +1,18 @@
 package com.scientechperu.tiendassc;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,28 +22,70 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ImageSpan;
+import android.util.Log;
+import android.util.Patterns;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.HeaderViewListAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.scientechperu.tiendassc.Clases.CategoriaTienda;
-import com.scientechperu.tiendassc.Fragmentos.FragmentoInicio;
+import com.scientechperu.tiendassc.Clases.Tienda;
+import com.scientechperu.tiendassc.Clases.UrlRaiz;
+import com.scientechperu.tiendassc.Clases.Usuario;
+import com.scientechperu.tiendassc.Fragmentos.FragmentEstacionamiento;
+import com.scientechperu.tiendassc.Fragmentos.FragmentPedido;
+import com.scientechperu.tiendassc.Fragmentos.FragmentoCarusel;
 import com.scientechperu.tiendassc.Fragmentos.PlaceholderFragment;
+import com.scientechperu.tiendassc.SingletonVolley.MySingleton;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 
 public class ActividadPrincipal extends AppCompatActivity {
@@ -67,6 +117,21 @@ public class ActividadPrincipal extends AppCompatActivity {
     private static boolean isRationale = true;
     private static boolean isFirst = true;
 
+
+    AlertDialog alertDialog;
+    ProgressDialog progressDialog;
+
+    private Button ingresar;
+    private EditText dni_usuario;
+    private EditText nombres_usuario;
+    private EditText apellidos_usuario;
+    private EditText email_usuario;
+    private EditText celular_usuario;
+    private EditText direccion_usuario;
+    String _ID_CLIENTE_ = "";
+
+    private SharedPreferences perfilUsuarioshared;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,13 +155,50 @@ public class ActividadPrincipal extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
 
+        View headerView = navigationView.getHeaderView(0);
+        TextView usuario = (TextView) headerView.findViewById(R.id.username);
+        TextView email_user = (TextView) headerView.findViewById(R.id.email);
+        usuario.setText("");
+        email_user.setText("");
+        perfilUsuarioshared = getApplicationContext().getSharedPreferences("PerfilUsuario", Context.MODE_PRIVATE);
+        if (perfilUsuarioshared.contains("_nombre")){
+
+            String nombreshared = perfilUsuarioshared.getString("_nombre", null);
+            String apellidoshared = perfilUsuarioshared.getString("_apellidos", null);
+            String emailshared = perfilUsuarioshared.getString("_email", null);
+            String celularshared = perfilUsuarioshared.getString("_celular", null);
+            String direccionshared = perfilUsuarioshared.getString("_direccion", null);
+            usuario.setText(nombreshared);
+            email_user.setText(emailshared);
+        }
+
+//        Toast.makeText(getApplicationContext(), usuario.getText() +"---"+ email_user.getText(),Toast.LENGTH_LONG).show();
+
 
         //actualizar menu
         final Menu menu = navigationView.getMenu();
         int itemIdMenu = 1;
         menu.add(group1Id, Menu.FIRST, Menu.FIRST, "Inicio").setIcon(R.drawable.inicio);
         for (CategoriaTienda categoria : arrayCaTienda) {
-            menu.add(group1Id + 1, itemIdMenu + 1, itemIdMenu + 1, categoria.getNombre()).setIcon(R.drawable.categorias);
+            Integer icon_menu = R.drawable.categorias;
+            switch (categoria.getNombre()){
+                case "Pollerías":
+                    icon_menu = R.drawable.pollerias;
+                    break;
+                case "Electrodomesticos":
+                    icon_menu = R.drawable.electrodomesticos;
+                    break;
+                case "Tecnología":
+                    icon_menu = R.drawable.tecnologia;
+                    break;
+                case "Estacionamientos":
+                    icon_menu = R.drawable.estacionamientos;
+                    break;
+                default:
+                    icon_menu = R.drawable.categorias;
+                    break;
+            }
+            menu.add(group1Id + 1, itemIdMenu + 1, itemIdMenu + 1, categoria.getNombre()).setIcon(icon_menu);
             itemIdMenu++;
         }
         // adding a section and items into it
@@ -124,6 +226,33 @@ public class ActividadPrincipal extends AppCompatActivity {
             seleccionarItem(navigationView.getMenu().getItem(0));
         }
 
+        final AlertDialog.Builder builder = new AlertDialog.Builder(ActividadPrincipal.this);
+        builder
+                .setIcon(R.drawable.salir)
+                .setTitle("¿Seguro de salir?")
+                .setCancelable(false)
+                .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        finish();
+                        System.exit(0);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alertDialog = builder.create();
+        alertDialog.getWindow().setSoftInputMode (WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+
+        ImageView imagenSalir = navigationView.findViewById(R.id.img_row_salir);
+        imagenSalir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.show();
+            }
+        });
 
     }
 
@@ -175,59 +304,6 @@ public class ActividadPrincipal extends AppCompatActivity {
         }
     }
 
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode,
-//                                           String permissions[], int[] grantResults) {
-//        switch (requestCode) {
-//            case REQUEST_CALL_PHONE: {
-//                // If request is cancelled, the result arrays are empty.
-//                if (grantResults.length > 0
-//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//
-//                    // permission was granted, yay! Do the phone call
-//
-//                } else {
-//
-//                    // permission denied, boo! Disable the
-//                    // functionality that depends on this permission.
-//                }
-//                return;
-//            }
-//            case REQUEST_READ_CONTACTS: {
-//                // If request is cancelled, the result arrays are empty.
-//                if (grantResults.length > 0
-//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//
-//                    // permission was granted, yay! Do the phone call
-//
-//                } else {
-//
-//                    // permission denied, boo! Disable the
-//                    // functionality that depends on this permission.
-//                }
-//                return;
-//            }
-//            case REQUEST_WRITE_CONTACTS: {
-//                // If request is cancelled, the result arrays are empty.
-//                if (grantResults.length > 0
-//                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//
-//                    // permission was granted, yay! Do the phone call
-//
-//                } else {
-//
-//                    // permission denied, boo! Disable the
-//                    // functionality that depends on this permission.
-//                }
-//                return;
-//            }
-//
-//            // other 'case' lines to check for other
-//            // permissions this app might request
-//        }
-//    }
-
-
 
     private void agregarToolbar() {
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -244,11 +320,14 @@ public class ActividadPrincipal extends AppCompatActivity {
 
 
     private void prepararDrawer(NavigationView navigationView) {
+
+
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                         // Crear nuevo fragmento
+
                         seleccionarItem(menuItem);
                         drawerLayout.closeDrawers();
                         return true;
@@ -270,9 +349,15 @@ public class ActividadPrincipal extends AppCompatActivity {
         if (title.equals("Inicio")){
             currentView = itemDrawer.getItemId();
 //            CURRENT_FRAGMENT_TAG= title;
-            fragment = new FragmentoInicio();
+            fragment = new FragmentoCarusel();
             pd.dismiss();
         }
+//        else if (title.equals("Estacionamientos")){
+//            currentView = itemDrawer.getItemId();
+////            CURRENT_FRAGMENT_TAG= title;
+//            fragment = new FragmentEstacionamiento();
+//            pd.dismiss();
+//        }
         else{
 
 //            CURRENT_FRAGMENT_TAG= title;
@@ -286,10 +371,13 @@ public class ActividadPrincipal extends AppCompatActivity {
 
 
         }
+
+//        Log.e(TAG, fragment.getClass().getSimpleName());
+
         if (fragment != null) {
             fragmentManager
                     .beginTransaction()
-                    .replace(R.id.contenedor_principal, fragment)
+                    .replace(R.id.contenedor_principal, fragment, fragment.getClass().getSimpleName())
                     .commit();
         }
         drawerLayout.closeDrawers(); // Cerrar drawer
@@ -318,6 +406,8 @@ public class ActividadPrincipal extends AppCompatActivity {
         final MenuItem menuItem = menu.findItem(R.id.action_shop);
 
 //        View actionView = MenuItemCompat.getActionView(menuItem);
+
+
 //        textCartItemCount = (TextView) actionView.findViewById(R.id.cart_badge);
 //        mCartItemCount = (int) Carro.count(Carro.class);
 //        setupBadge(mCartItemCount);
@@ -329,7 +419,29 @@ public class ActividadPrincipal extends AppCompatActivity {
 //            }
 //        });
 
+        menu.add(0, 1, 1, menuIconWithText(getResources().getDrawable(R.drawable.cesta), "Ultimo Pedido"));
+        menu.add(0, 2, 2, menuIconWithText(getResources().getDrawable(R.drawable.salir), "Salir"));
+
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+// You can hide the state of the menu item here if you call getActivity().supportInvalidateOptionsMenu(); somewhere in your code
+        MenuItem pedido = menu.findItem(1);
+        pedido.setVisible(false);
+        return true;
+    }
+
+    private CharSequence menuIconWithText(Drawable r, String title) {
+
+        r.setBounds(0, 0, r.getIntrinsicWidth(), r.getIntrinsicHeight());
+        SpannableString sb = new SpannableString("    " + title);
+        ImageSpan imageSpan = new ImageSpan(r, ImageSpan.ALIGN_BOTTOM);
+        sb.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        return sb;
     }
 
 
@@ -340,6 +452,45 @@ public class ActividadPrincipal extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
+                return true;
+            case 1:
+                Bundle args = new Bundle();
+                args.putString(FragmentPedido.ARG_SECTION_TITLE, "Ultimo Pedido");
+                fragment = FragmentPedido.newInstance("Ultimo Pedido");
+                fragment.setArguments(args);
+
+                FragmentTransaction fragmentTransaction2 = fragmentManager.beginTransaction();
+
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack so the user can navigate back
+                fragmentTransaction2.replace(R.id.contenedor_principal, fragment, "FragmentPedido");
+                fragmentTransaction2.addToBackStack(null);
+                fragmentTransaction2.commit();
+                setTitle("Ultimo Pedido"); // Setear título actual
+//                Toast.makeText(getApplicationContext(), "Carrrioto", Toast.LENGTH_SHORT).show();
+                return true;
+            case 2:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder
+                        .setIcon(R.drawable.salir)
+                        .setTitle("¿Seguro de salir?")
+                        .setCancelable(false)
+                        .setPositiveButton("Si", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                finish();
+                                System.exit(0);
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+                AlertDialog alertDialog = builder.create();
+                alertDialog.getWindow().setSoftInputMode (WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                alertDialog.show();
+//                Toast.makeText(getApplicationContext(), "Saliste de la APP", Toast.LENGTH_SHORT).show();
                 return true;
 //            case R.id.action_shop:
 //                Bundle args = new Bundle();
@@ -471,4 +622,408 @@ public class ActividadPrincipal extends AppCompatActivity {
         }
     }
 
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(ActividadPrincipal.this);
+        alertDialogBuilder.setCancelable(false);
+        View login = getLayoutInflater().inflate(R.layout.login, null);
+        alertDialogBuilder.setView(login);
+        alertDialog = alertDialogBuilder.create();
+        alertDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+//        alertDialog.setCanceledOnTouchOutside(false);
+
+        progressDialog = new ProgressDialog(ActividadPrincipal.this);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Registrando...");
+        progressDialog.setCancelable(false);
+
+        perfilUsuarioshared = getApplicationContext().getSharedPreferences("PerfilUsuario", Context.MODE_PRIVATE);
+
+        if (perfilUsuarioshared.contains("_nombre")){
+            //pass
+        }
+        else{
+            alertDialog.show();
+            dni_usuario = login.findViewById(R.id.input_dni);
+            nombres_usuario = login.findViewById(R.id.input_name);
+            apellidos_usuario = login.findViewById(R.id.input_apellidos);
+            email_usuario = login.findViewById(R.id.input_email);
+            celular_usuario = login.findViewById(R.id.input_telefono);
+            direccion_usuario = login.findViewById(R.id.input_direccion);
+
+
+            dni_usuario.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (!hasFocus) {
+                        // code to execute when EditText SALE focus
+                        String _dni = dni_usuario.getText().toString();
+                        if (!_dni.isEmpty()) {
+                            Log.e(TAG, "ESTAS CONSULTANDO AL CLIENTE");
+                            jsonCliente(UrlRaiz.domain + "/api/customers/" + UrlRaiz.ws_key + "&output_format=JSON&filter[num_document]="+dni_usuario.getText()+"&display=full");
+                        }
+                    }
+                }
+            });
+
+
+//            nombres_usuario.setText("Hans");
+//            apellidos_usuario.setText("Cordova g");
+//            email_usuario.setText("sadsa@asdsa.com");
+//            celular_usuario.setText("112321321");
+//            direccion_usuario.setText("ghgfhgfh 5656");
+
+            ingresar = (Button) login.findViewById(R.id.btn_signup);
+            ingresar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    signup();
+
+                }
+            });
+        }
+
+    }
+
+
+    public void signup() {
+        Log.d(TAG, "Signup");
+        SharedPreferences.Editor editor = perfilUsuarioshared.edit();
+
+        if (!validate()) {
+            onSignupFailed();
+            return;
+        }
+
+        ingresar.setEnabled(false);
+
+        progressDialog.show();
+
+        String _dni = dni_usuario.getText().toString();
+        String _nombre = nombres_usuario.getText().toString();
+        String _apellidos = apellidos_usuario.getText().toString();
+        String _email = email_usuario.getText().toString();
+        String _celular = celular_usuario.getText().toString();
+        String _direccion = direccion_usuario.getText().toString();
+
+        // TODO: Implement your own signup logic here.
+
+
+        editor.putString("_dni", _dni);
+        editor.putString("_nombre", _nombre);
+        editor.putString("_apellidos", _apellidos);
+        editor.putString("_email", _email);
+        editor.putString("_celular", _celular);
+        editor.putString("_direccion", _direccion);
+        editor.apply();
+
+//
+        //guardar datos en la web
+//        if (_ID_CLIENTE_.equals("")){
+//            xmlSendCliente("POST", "", _nombre, _apellidos, _email, _celular, _direccion);
+//        }else{
+//            xmlSendCliente("PUT", _ID_CLIENTE_, _nombre, _apellidos, _email, _celular, _direccion);
+//        }
+        alertDialog.dismiss();
+        progressDialog.dismiss();
+    }
+
+
+
+    public void onSignupFailed() {
+        Toast.makeText(getApplicationContext(), "Llene los datos correctamente", Toast.LENGTH_LONG).show();
+        ingresar.setEnabled(true);
+    }
+
+    public boolean validate() {
+        boolean valid = true;
+
+        String _dni = dni_usuario.getText().toString();
+        String _nombre = nombres_usuario.getText().toString();
+        String _apellidos = apellidos_usuario.getText().toString();
+        String _email = email_usuario.getText().toString();
+        String _celular = celular_usuario.getText().toString();
+        String _direccion = direccion_usuario.getText().toString();
+
+        if (_dni.isEmpty() || _dni.length() < 8) {
+            dni_usuario.setError("Al menos 8 caracteres");
+            valid = false;
+        } else {
+            dni_usuario.setError(null);
+        }
+
+        if (_nombre.isEmpty() || _nombre.length() < 2) {
+            nombres_usuario.setError("Al menos 2 caracteres");
+            valid = false;
+        } else {
+            nombres_usuario.setError(null);
+        }
+
+        if (_apellidos.isEmpty() || _apellidos.length() < 3) {
+            apellidos_usuario.setError("Al menos 5 caracteres");
+            valid = false;
+        } else {
+            apellidos_usuario.setError(null);
+        }
+
+        if (_email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(_email).matches()) {
+            email_usuario.setError("ingrese un email valido");
+            valid = false;
+        } else {
+            email_usuario.setError(null);
+        }
+        if (_celular.isEmpty() || !Patterns.PHONE.matcher(_celular).matches() || _celular.length() < 8 || _celular.length() > 10) {
+            celular_usuario.setError("Numero de celular invalido");
+            valid = false;
+        } else {
+            celular_usuario.setError(null);
+        }
+
+        if (_direccion.isEmpty() || _direccion.length() < 6) {
+            direccion_usuario.setError("Al menos 6 caracteres");
+            valid = false;
+        } else {
+            direccion_usuario.setError(null);
+        }
+
+
+        return valid;
+    }
+    public void xmlSendCliente(final String metodo,final String idcustomer, final String nombres, final String apellidos, final String email, final String celular, final String direccion){
+
+
+
+            Integer metodo_envio = Request.Method.PUT;
+
+            if (metodo.equals("POST")){
+                metodo_envio =  Request.Method.POST;
+            }
+
+
+            String url = UrlRaiz.domain + "/api/customers/" + UrlRaiz.ws_key + "&schema=blank";
+
+            StringRequest strReq = new StringRequest(metodo_envio,
+                    url, new Response.Listener<String>() {
+
+                @Override
+                public void onResponse(String response) {
+//                Log.e(TAG, response.toString());
+                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    Document dom = null;
+                    try {
+                        DocumentBuilder builder = factory.newDocumentBuilder();
+                        StringReader reader = new StringReader(response);
+                        InputSource source = new InputSource(reader);
+                        dom = builder.parse(source);
+                    } catch (ParserConfigurationException e) {
+                    } catch (SAXException e) {
+                    } catch (IOException e) {
+                    }
+                    if (dom != null) {
+                        Element root = dom.getDocumentElement();
+                        NodeList idItem = root.getElementsByTagName("id");
+                        NodeList num_document = root.getElementsByTagName("num_document");
+                        NodeList nombres = root.getElementsByTagName("firstname");
+                        NodeList apellidos = root.getElementsByTagName("lastname");
+                        NodeList email = root.getElementsByTagName("email");
+                        NodeList address = root.getElementsByTagName("address");
+                        NodeList phone = root.getElementsByTagName("phone");
+                        NodeList id_shop = root.getElementsByTagName("id_shop");
+
+                        String id = idItem.item(0).getChildNodes().item(0).getNodeValue();
+                        String dni_db = num_document.item(0).getChildNodes().item(0).getNodeValue();
+                        String nombres_db = nombres.item(0).getChildNodes().item(0).getNodeValue();
+                        String apellidos_db = apellidos.item(0).getChildNodes().item(0).getNodeValue();
+                        String email_db = email.item(0).getChildNodes().item(0).getNodeValue();
+                        String phone_db = phone.item(0).getChildNodes().item(0).getNodeValue();
+                        String address_db = address.item(0).getChildNodes().item(0).getNodeValue();
+                        String id_shop_db = id_shop.item(0).getChildNodes().item(0).getNodeValue();
+
+
+                        Usuario usuario = new Usuario(id, dni_db, nombres_db, apellidos_db, email_db, phone_db, address_db, id_shop_db);
+                        usuario.save();
+//                    SharedPreferences.Editor editor = perfilUsuarioshared.edit();
+//                    editor.putString("_idcustomer", id);
+//                    editor.apply();
+
+//                    Toast.makeText(getActivity().getBaseContext(), id, Toast.LENGTH_LONG).show();
+
+                    }
+
+
+                    progressDialog.dismiss();
+
+                }
+            }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.e(TAG, "Error: " + error.getMessage());
+                    progressDialog.dismiss();
+                }
+            }) {
+
+                @Override
+                public String getBodyContentType() {
+                    return "application/xml; charset=" + getParamsEncoding();
+                }
+
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+
+                    String postData = generaXMLCliente(idcustomer, nombres, apellidos, email, celular, direccion); // TODO get your final output
+//                    Log.e(TAG, postData);
+                    try {
+                        return postData == null ? null :
+                                postData.getBytes(getParamsEncoding());
+                    } catch (UnsupportedEncodingException uee) {
+                        // TODO consider if some other action should be taken
+                        return null;
+                    }
+                }
+            };
+
+                   /*Se definen las políticas para la petición realizada. Recibe como argumento una instancia de la clase
+        DefaultRetryPolicy, que recibe como parámetros de entrada el tiempo inicial de espera para la respuesta,
+        el número máximo de intentos, y el multiplicador de retardo de envío por defecto.*/
+            strReq.setRetryPolicy(new DefaultRetryPolicy(
+                    15000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+
+        /*Se declara e inicializa una variable de tipo RequestQueue, encargada de crear
+        una nueva petición en la cola del servicio web.*/
+            MySingleton.getInstance(ActividadPrincipal.this).addToRequestQueue(strReq);
+
+    }
+
+    public String generaXMLCliente(String id_cliente, String firstname, String lastname, String email, String celular, String direccion) {
+        String url = UrlRaiz.domain+"/api/";
+
+        String format = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<prestashop xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n" +
+                "<customer>\n" +
+                "\t<id>"+id_cliente+"</id>\n" +
+                "\t<id_default_group xlink:href=\""+url+"groups/3\">3</id_default_group>\n" +
+                "\t<id_lang xlink:href=\""+url+"languages/2\">2</id_lang>\n" +
+                "\t<newsletter_date_add></newsletter_date_add>\n" +
+                "\t<ip_registration_newsletter></ip_registration_newsletter>\n" +
+                "\t<last_passwd_gen></last_passwd_gen>\n" +
+                "\t<secure_key>a298fc1739f88a4679a4eac1a16aab43</secure_key>\n" +
+                "\t<deleted>0</deleted>\n" +
+                "\t<passwd>12345678</passwd>\n" +
+                "\t<firstname>%s</firstname>\n" +
+                "\t<lastname>%s</lastname>\n" +
+                "\t<email>%s</email>\n" +
+                "\t<id_gender>1</id_gender>\n" +
+                "\t<birthday></birthday>\n" +
+                "\t<newsletter>0</newsletter>\n" +
+                "\t<optin>1</optin>\n" +
+                "\t<website></website>\n" +
+                "\t<company></company>\n" +
+                "\t<siret></siret>\n" +
+                "\t<ape></ape>\n" +
+                "\t<outstanding_allow_amount>0.000000</outstanding_allow_amount>\n" +
+                "\t<show_public_prices>0</show_public_prices>\n" +
+                "\t<id_risk>0</id_risk>\n" +
+                "\t<max_payment_days>0</max_payment_days>\n" +
+                "\t<active>1</active>\n" +
+                "\t<note></note>\n" +
+                "\t<is_guest>0</is_guest>\n" +
+                "\t<id_shop>1</id_shop>\n" +
+                "\t<id_shop_group></id_shop_group>\n" +
+                "\t<date_add></date_add>\n" +
+                "\t<date_upd></date_upd>\n" +
+                "\t<phone>%s</phone>" +
+                "\t<address>%s</address>\n" +
+                "<associations></associations>\n" +
+                "</customer>\n" +
+                "</prestashop>";
+
+        return String.format(format, firstname, lastname, email, celular, direccion);
+    }
+
+    //consultar al cliente
+    private void jsonCliente(String url) {
+
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+
+                            JSONArray jsonMainNode = response.getJSONArray("customers");
+
+//                            for (int i = 0; i < jsonMainNode.length(); i++) {
+                            JSONObject jsonChildNode = jsonMainNode.getJSONObject(0);
+                            Integer id_customer = jsonChildNode.optInt("id");
+                            String email = jsonChildNode.optString("email");
+                            String firstname = jsonChildNode.optString("firstname");
+                            String lastname = jsonChildNode.optString("lastname");
+                            String phone = jsonChildNode.optString("phone");
+                            String address = jsonChildNode.optString("address");
+//                            }
+                            pd.dismiss();
+
+//                            nombres_usuario.setText(id_customer);
+                            _ID_CLIENTE_ = String.valueOf(id_customer);
+                            email_usuario.setText(email);
+                            nombres_usuario.setText(firstname);
+                            apellidos_usuario.setText(lastname);
+                            celular_usuario.setText(phone);
+                            direccion_usuario.setText(address);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+//                Toast.makeText(getActivity(),"El servidor ha tardado demasiado tiempo en responder",Toast.LENGTH_SHORT).show();
+                error.printStackTrace();
+            }
+        });
+
+
+          /*Se definen las políticas para la petición realizada. Recibe como argumento una instancia de la clase
+        DefaultRetryPolicy, que recibe como parámetros de entrada el tiempo inicial de espera para la respuesta,
+        el número máximo de intentos, y el multiplicador de retardo de envío por defecto.*/
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                15000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+
+
+        /*Se declara e inicializa una variable de tipo RequestQueue, encargada de crear
+        una nueva petición en la cola del servicio web.*/
+        MySingleton.getInstance(ActividadPrincipal.this).addToRequestQueue(request);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        forceUpdate();
+    }
+
+    // check version on play store and force update
+    public void forceUpdate(){
+        PackageManager packageManager = this.getPackageManager();
+        PackageInfo packageInfo = null;
+        try {
+            packageInfo =  packageManager.getPackageInfo(getPackageName(),0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+//        assert packageInfo != null;
+        String currentVersion = packageInfo.versionName;
+        new ForceUpdateAsync(currentVersion, ActividadPrincipal.this).execute();
+    }
 }

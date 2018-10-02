@@ -66,21 +66,21 @@ public class Splash extends Activity {
         textView.setText("");
 
 
-        if (arrayCaTienda.isEmpty()) {
+//        if (arrayCaTienda.isEmpty()) {
             if(isOnline(this)){
 //                Toast.makeText(getApplicationContext(),"Conectado",Toast.LENGTH_SHORT).show();
                 //pedir las categorias para el menu
                 peticionServicioCaTiendas(UrlRaiz.domain + "/api/catiendas" + UrlRaiz.ws_key + "&output_format=JSON&display=full");
-                runSplash(1);
+                runSplash(2);
             }else{
                 Toast.makeText(getApplicationContext(),"No hay conexión a internet",Toast.LENGTH_SHORT).show();
                 finish();
             }
-        }else{
+//        }else{
 //            Toast.makeText(getApplicationContext(),"ararayyyy",Toast.LENGTH_SHORT).show();
-            arrayCaTienda = CategoriaTienda.listAll(CategoriaTienda.class);
-            runSplash(5);
-        }
+//            arrayCaTienda = CategoriaTienda.listAll(CategoriaTienda.class);
+//            runSplash(5);
+//        }
 
     }
 
@@ -130,6 +130,8 @@ la URI para realizar la petición al servicio web.*/
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
+                            CategoriaTienda.deleteAll(CategoriaTienda.class);
+                            Tienda.deleteAll(Tienda.class);
 
                             JSONArray jsonMainNode = response.getJSONArray("catiendas");
 

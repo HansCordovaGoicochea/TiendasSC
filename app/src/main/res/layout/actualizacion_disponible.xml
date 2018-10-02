@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:weightSum="2"
+    android:background="@drawable/actualizacion_background"
+  >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@color/md_blue_400"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:src="@drawable/download_white_48dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Actualización"
+            android:textColor="@color/md_white_1000"
+            android:textSize="18dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="disponible"
+            android:textColor="@color/md_white_1000"
+            android:textSize="18dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="¡Hola! Nuestra app tiene novedades para ti. ¡Actualízala y descúbrelas!"
+        android:textColor="@color/md_blue_400"
+        android:textAlignment="center"
+        android:textSize="18dp"/>
+
+        <Button
+            android:id="@+id/buton_actualizar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/md_blue_400"
+            android:textStyle="bold"
+            android:layout_marginTop="40dp"
+            android:gravity="bottom|center"
+            android:text="ACTUALIZAR AHORA"
+            android:background="@drawable/buttonstyle"/>
+    </LinearLayout>
+
+
+
+</LinearLayout>

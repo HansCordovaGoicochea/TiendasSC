@@ -172,6 +172,7 @@ public class RecyclerViewHolderProductos extends RecyclerView.ViewHolder impleme
         txtclose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                v.getRootView().findViewById(R.id.)
                 myDialog.dismiss();
             }
         });
@@ -179,6 +180,15 @@ public class RecyclerViewHolderProductos extends RecyclerView.ViewHolder impleme
         btnFollow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                //                Toast.makeText(getContext(), "num "+badge.getText(), Toast.LENGTH_SHORT).show();
+                //actualizar el icono del carrito
+                // To load the data at a later time
+                SharedPreferences prefs = itemView.getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
+                Integer idtienda_current = prefs.getInt("id_shop", 0);
+                Integer idcaja_current = prefs.getInt("id_caja", 0);
+
+
                 List<Carro> carros = Carro.find(Carro.class, "idproducto = ?", producto.getId_product().toString());
                 if (carros.size() > 0) {
 
@@ -210,6 +220,7 @@ public class RecyclerViewHolderProductos extends RecyclerView.ViewHolder impleme
                     carro.setId_image(producto.getId_image());
                     carro.setImporte(importe);
                     carro.setId_shop(Integer.valueOf(producto.getId_shop_default()));
+                    carro.setId_caja(idcaja_current);
                     carro.save();
 
 //                    Toast.makeText(getContext(), "¡Tienes "+cant.getValue()+" "+item.getName(), Toast.LENGTH_SHORT).show();
@@ -220,17 +231,12 @@ public class RecyclerViewHolderProductos extends RecyclerView.ViewHolder impleme
 
 //                    Toast toast= Toast.makeText(getContext(), "¡Tienes "+cant.getValue()+" "+item.getName(), Toast.LENGTH_SHORT);
 
-//                Toast.makeText(getContext(), "num "+badge.getText(), Toast.LENGTH_SHORT).show();
-                //actualizar el icono del carrito
-                // To load the data at a later time
-                SharedPreferences prefs = itemView.getContext().getSharedPreferences("CargarProductos", Context.MODE_PRIVATE);
-                Integer idtienda_current = prefs.getInt("id_shop", 0);
-
 
                 String[] vals = {
-                        String.valueOf(idtienda_current)
+                        String.valueOf(idtienda_current),
+                        String.valueOf(idcaja_current)
                 };
-                int mCartItemCount = (int) Carro.count(Carro.class, "idshop = ?", vals);
+                int mCartItemCount = (int) Carro.count(Carro.class, "idshop = ? and idcaja = ?", vals);
                 if (mCartItemCount < 0){
                     mCartItemCount = 0;
                 }
