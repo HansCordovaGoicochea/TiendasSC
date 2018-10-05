@@ -228,7 +228,6 @@ public class GridAdapter extends BaseAdapter {
                         jsonCliente(UrlRaiz.domain +"/"+item.getVirtual_uri()+"/api/customers/" + UrlRaiz.ws_key + "&output_format=JSON&filter[num_document]="+dnishared+"&filter[id_shop]="+item.getId_shop()+"&display=full");
                     }
 
-
                 }else{
                     Fragment fragmentProductos;
                     args.putString(FragmentProductos.ARG_SECTION_URL, UrlRaiz.domain+"/"+item.getVirtual_uri()+"api/products"+UrlRaiz.ws_key+"&output_format=JSON&filter[active]=1&filter[id_caja]="+item.getId_caja()+"&display=full&price[precio_con_igv][use_tax]=1");

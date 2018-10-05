@@ -1,5 +1,6 @@
 package com.scientechperu.tiendassc;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -31,6 +33,7 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.pdf417.encoder.Dimensions;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 import com.scientechperu.tiendassc.Clases.Tienda;
@@ -70,6 +73,8 @@ public class QrActivity extends AppCompatActivity implements View.OnClickListene
     Tienda tienda;
     Usuario usuario;
 
+    TextView cliente;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,6 +82,7 @@ public class QrActivity extends AppCompatActivity implements View.OnClickListene
 
         findViewById(R.id.home).setOnClickListener(this);
         imageViewQrCode = findViewById(R.id.imagen_QR);
+        cliente = findViewById(R.id.cliente_qr);
 
 
         Intent intent = getIntent();
@@ -126,9 +132,13 @@ public class QrActivity extends AppCompatActivity implements View.OnClickListene
 
     }
 
+    @SuppressLint("SetTextI18n")
     private void generarQR() {
         String texto_qr = vehiculos.getPlaca()+"|"+vehiculos.getIdcustomer();
         MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
+
+        cliente.setText(usuario.getNombre()+" - "+vehiculos.getPlaca());
+
 
         try {
 
@@ -136,9 +146,11 @@ public class QrActivity extends AppCompatActivity implements View.OnClickListene
             Map<EncodeHintType, Object> hints = new EnumMap<EncodeHintType, Object>(EncodeHintType.class);
             hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
             hints.put(EncodeHintType.MARGIN, 1); /* default = 4 */
+//            hints.put(EncodeHintType.PDF417_DIMENSIONS, new Dimensions(40,100,40,100)); /* default = 4 */
+
 //            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
 
-            BitMatrix bitMatrix = multiFormatWriter.encode(texto_qr, BarcodeFormat.PDF_417, 800, 700, hints);
+            BitMatrix bitMatrix = multiFormatWriter.encode(texto_qr, BarcodeFormat.PDF_417, 800, 400, hints);
 //            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
             int width = bitMatrix.getWidth();
             int height = bitMatrix.getHeight();
@@ -146,7 +158,7 @@ public class QrActivity extends AppCompatActivity implements View.OnClickListene
             for (int y = 0; y < height; y++) {
                 int offset = y * width;
                 for (int x = 0; x < width; x++) {
-                    pixels[offset + x] = bitMatrix.get(x, y) ? Color.BLUE :  Color.WHITE;
+                    pixels[offset + x] = bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF;
                 }
             }
             Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);

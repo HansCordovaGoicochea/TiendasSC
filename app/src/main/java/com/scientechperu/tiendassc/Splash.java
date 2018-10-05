@@ -2,9 +2,14 @@ package com.scientechperu.tiendassc;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
@@ -58,30 +63,36 @@ public class Splash extends Activity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.splash);
-
-        progressBar=(ProgressBar)findViewById(R.id.progressBar);
-        progressBar.setProgress(0);
-        textView=(TextView)findViewById(R.id.textView);
-        textView.setText("");
 
 
-//        if (arrayCaTienda.isEmpty()) {
-            if(isOnline(this)){
-//                Toast.makeText(getApplicationContext(),"Conectado",Toast.LENGTH_SHORT).show();
-                //pedir las categorias para el menu
-                peticionServicioCaTiendas(UrlRaiz.domain + "/api/catiendas" + UrlRaiz.ws_key + "&output_format=JSON&display=full");
-                runSplash(2);
-            }else{
-                Toast.makeText(getApplicationContext(),"No hay conexión a internet",Toast.LENGTH_SHORT).show();
-                finish();
+        if(!isConnected(Splash.this)) buildDialog(Splash.this).show();
+        else {
+            Toast.makeText(Splash.this,"¡BIENVENIDO!", Toast.LENGTH_SHORT).show();
+            setContentView(R.layout.splash);
+
+
+            progressBar=(ProgressBar)findViewById(R.id.progressBar);
+            progressBar.setProgress(0);
+            textView=(TextView)findViewById(R.id.textView);
+            textView.setText("");
+
+
+    //        if (arrayCaTienda.isEmpty()) {
+                if(isOnline(this)){
+    //                Toast.makeText(getApplicationContext(),"Conectado",Toast.LENGTH_SHORT).show();
+                    //pedir las categorias para el menu
+                    peticionServicioCaTiendas(UrlRaiz.domain + "/api/catiendas" + UrlRaiz.ws_key + "&output_format=JSON&display=full");
+                    runSplash(2);
+                }else{
+                    Toast.makeText(getApplicationContext(),"No hay conexión a internet",Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+    //        }else{
+    //            Toast.makeText(getApplicationContext(),"ararayyyy",Toast.LENGTH_SHORT).show();
+    //            arrayCaTienda = CategoriaTienda.listAll(CategoriaTienda.class);
+    //            runSplash(5);
+    //        }
             }
-//        }else{
-//            Toast.makeText(getApplicationContext(),"ararayyyy",Toast.LENGTH_SHORT).show();
-//            arrayCaTienda = CategoriaTienda.listAll(CategoriaTienda.class);
-//            runSplash(5);
-//        }
-
     }
 
     private void runSplash(final Integer num) {
@@ -105,8 +116,21 @@ public class Splash extends Activity {
                 }else{
                     //closing the timer
                     timer.cancel();
-                    Intent intent =new Intent(Splash.this, ActividadPrincipal.class);
-                    startActivity(intent);
+
+                    // Get the shared preferences
+                    SharedPreferences preferences = getSharedPreferences("preference_onboarding", MODE_PRIVATE);
+
+                    // Check if onboarding_complete is false
+                    if(!preferences.getBoolean("onboarding_complete",false)) {
+                        // Start the onboarding Activity
+                        Intent onboarding = new Intent(Splash.this, onBoarding.class);
+                        startActivity(onboarding);
+
+                    }else{
+                        Intent intent =new Intent(Splash.this, ActividadPrincipal.class);
+                        startActivity(intent);
+                    }
+
                     // close this activity
                     finish();
                 }
@@ -300,5 +324,38 @@ la URI para realizar la petición al servicio web.*/
             e.printStackTrace();
         }
         return false;
+    }
+
+    public boolean isConnected(Context context) {
+
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netinfo = cm.getActiveNetworkInfo();
+
+        if (netinfo != null && netinfo.isConnectedOrConnecting()) {
+            android.net.NetworkInfo wifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            android.net.NetworkInfo mobile = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+        if((mobile != null && mobile.isConnectedOrConnecting()) || (wifi != null && wifi.isConnectedOrConnecting())) return true;
+        else return false;
+        } else
+        return false;
+    }
+
+    public AlertDialog.Builder buildDialog(Context c) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(c);
+        builder.setTitle("No hay conexión a internet");
+        builder.setMessage("Necesitas tener acceso a datos o wifi en tu Celular. Presiona en OK para salir");
+
+        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                finish();
+            }
+        });
+
+        return builder;
     }
 }

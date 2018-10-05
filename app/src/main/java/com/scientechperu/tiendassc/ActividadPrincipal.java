@@ -26,6 +26,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -44,6 +45,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -253,6 +255,7 @@ public class ActividadPrincipal extends AppCompatActivity {
                 alertDialog.show();
             }
         });
+
 
     }
 
@@ -1022,7 +1025,7 @@ public class ActividadPrincipal extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-//        assert packageInfo != null;
+        assert packageInfo != null;
         String currentVersion = packageInfo.versionName;
         new ForceUpdateAsync(currentVersion, ActividadPrincipal.this).execute();
     }

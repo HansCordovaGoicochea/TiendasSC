@@ -85,6 +85,7 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -204,7 +205,7 @@ public class FragmentCarrito extends Fragment {
     }
 
     private boolean isLocationEnabled() {
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 
     @Override
@@ -316,6 +317,11 @@ public class FragmentCarrito extends Fragment {
         pedido.setVisible(true);
     }
 
+    public static float round(double d, int decimalPlace)
+    {
+        return BigDecimal.valueOf(d).setScale(decimalPlace, BigDecimal.ROUND_HALF_UP).floatValue();
+    }
+
     @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -405,15 +411,33 @@ public class FragmentCarrito extends Fragment {
             public void onClick(View v)
             {
                 final boolean es_celular = isTelephone(getActivity());
-                Log.e(TAG, es_celular+"");
+//                Log.e(TAG, es_celular+"");
 
                 realizar_pedido.setEnabled(false); //deshabilitar el boton
                 if(isOnline(getContext())){
-                    Log.e(TAG, "--------------");
-                    if (!checkLocation()){
+                    locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+                    boolean gps_enabled = false;
+                    boolean network_enabled = false;
+
+                    try {
+                        gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+                    } catch(Exception ex) {}
+
+                    try {
+                        network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                    } catch(Exception ex) {}
+
+                    if(!gps_enabled && !network_enabled) {
+                        showAlert();
                         realizar_pedido.setEnabled(true); //habilitar el boton
                         return;
                     }
+//                    Log.e(TAG, "--------------");
+//                    if (!checkLocation()){
+//                        realizar_pedido.setEnabled(true); //habilitar el boton
+//                        Log.e(TAG, "ERROR DE PERMsssssssISOS");
+//                        return;
+//                    }
 
                     final String[] filtro_idshop = {
                             String.valueOf(tienda.getId_shop()),
@@ -426,12 +450,12 @@ public class FragmentCarrito extends Fragment {
 //
 //                    }
                     if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
+                        Log.e(TAG, "ERROR DE PERMISOS");
                     }
 
                     mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
 
-                    locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
                         @Override
                         public void onLocationChanged(Location location) {
@@ -456,15 +480,18 @@ public class FragmentCarrito extends Fragment {
                         }
                     });
 
+                    Log.e(TAG, "Eassssssssssssss");
+
                     mFusedLocationClient.getLastLocation()
                             .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
                                 @Override
                                 public void onSuccess(Location location) {
                                     // Got last known location. In some rare situations this can be null.
+                                    Log.e(TAG, "Eassssssssssssss 2");
                                     if (location != null) {
                                         // Logic to handle location object
-                                        Log.e(TAG, location.getLatitude() + "");
-                                        Log.e(TAG, location.getLongitude() + "");
+                                        Log.e(TAG, round(location.getLatitude(), 4) + "");
+                                        Log.e(TAG, round(location.getLongitude(), 5) + "");
 
                                         latitud_cliente = location.getLatitude() + "";
                                         longitud_cliente = location.getLongitude() + "";
@@ -492,8 +519,11 @@ public class FragmentCarrito extends Fragment {
                                         exact_location = new LatLng(Double.parseDouble(tienda.getLatitud()), Double.parseDouble(tienda.getLongitud()));
 //                                        exact_location = new LatLng(-7.182138, -78.501823);
 //                                        exact_location = new LatLng(-7.182149, -78.501844);
-                                        double lat = exact_location.latitude; //getLatitude
-                                        double lng = exact_location.longitude;//getLongitude
+                                        double lat = round(exact_location.latitude, 4); //getLatitude
+                                        double lng = round(exact_location.longitude, 5);//getLongitude
+
+                                        double lat_current = round(location.getLatitude(), 4); //getLatitude
+                                        double lng_current = round(location.getLongitude(), 5);//getLongitude
 
                                         // aqui guardamos las distancias en tre los puntos
                                         float[] disResultado = new float[2];
@@ -501,14 +531,14 @@ public class FragmentCarrito extends Fragment {
                                         Location.distanceBetween(
                                                 lat,
                                                 lng,
-                                                location.getLatitude(),
-                                                location.getLongitude(),
+                                                lat_current,
+                                                lng_current,
                                                 disResultado);
 
                                         Log.e("disresultado", Arrays.toString(disResultado));
 
                                         //verificar si estamos dentro o fuera del radio de ubicacion
-                                        if((double)disResultado[0] > (double)15){
+                                        if((double)disResultado[0] > (double)20){
 //                                           Log Fuera
                                             Log.e(TAG, "Fuera");
                                             //
@@ -635,6 +665,9 @@ public class FragmentCarrito extends Fragment {
                                         }
                                     }
                                     }//fin del else que comprueba la mesa
+                                    else{
+                                        Toast.makeText(getContext(),"Location Not found",Toast.LENGTH_LONG).show();
+                                    }
                                 }
                             });
 

@@ -58,7 +58,7 @@ public class CuponesAdapter extends RecyclerView.Adapter<CuponesAdapter.ViewHold
 //        this.itemNameList = itemNameList;
         this.context = context;
 
-        Log.e("namelist", nameList.toString());
+//        Log.e("namelist", nameList.toString());
 
         for (int i = 0; i < nameList.size(); i++) {
             counter.add(0);
